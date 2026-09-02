@@ -1,0 +1,73 @@
+{
+  "sources": [
+    {
+      "source_id": "SRC-DELHI-BLACKSPOTS-2024",
+      "source_name": "Delhi Traffic Police Official 117 High-Fatality Blackspots",
+      "organization": "Delhi Traffic Police / MoRTH India",
+      "source_type": "TIER_C",
+      "access_method": "MANUAL_CSV",
+      "url": "https://delhitrafficpolice.nic.in/",
+      "license": "Government Open Data / Public Spatial Prior",
+      "geographic_scope": "Delhi NCR",
+      "temporal_scope": "2021-2024",
+      "coordinate_precision": "BLACKSPOT_CENTROID",
+      "timestamp_precision": "APPROXIMATE",
+      "severity_available": true,
+      "provenance_level": "BLACKSPOT_CONTEXT",
+      "verification_status": "VERIFIED",
+      "last_verified": "2026-08-31"
+    },
+    {
+      "source_id": "SRC-MORTH-IRAD-2024",
+      "source_name": "Integrated Road Accident Database (iRAD / eDAR)",
+      "organization": "Ministry of Road Transport and Highways (MoRTH)",
+      "source_type": "TIER_A",
+      "access_method": "PRIVATE",
+      "url": "https://irad.parivahan.gov.in/",
+      "license": "Restricted Government Access",
+      "geographic_scope": "National / Delhi NCR",
+      "temporal_scope": "2021-2025",
+      "coordinate_precision": "EXACT_GPS",
+      "timestamp_precision": "HOURLY_UTC",
+      "severity_available": true,
+      "provenance_level": "RESEARCH_REAL",
+      "verification_status": "RESTRICTED",
+      "last_verified": "2026-08-31"
+    },
+    {
+      "source_id": "SRC-OPEN-METEO-ARCHIVE",
+      "source_name": "Open-Meteo Historical Weather Archive API",
+      "organization": "Open-Meteo.com",
+      "source_type": "TIER_B",
+      "access_method": "REST_API",
+      "url": "https://archive-api.open-meteo.com/v1/archive",
+      "license": "CC BY 4.0",
+      "geographic_scope": "Global / Delhi NCR",
+      "temporal_scope": "1940-2026",
+      "coordinate_precision": "GEODESIC_ESTIMATE",
+      "timestamp_precision": "HOURLY_UTC",
+      "severity_available": false,
+      "provenance_level": "RESEARCH_REAL",
+      "verification_status": "VERIFIED",
+      "last_verified": "2026-08-31"
+    },
+    {
+      "source_id": "SRC-SYNTHETIC-TEST-FIXTURES",
+      "source_name": "SafeRoute AI Pipeline Synthetic Test Fixtures",
+      "organization": "SafeRoute AI Team",
+      "source_type": "TIER_E",
+      "access_method": "MANUAL_CSV",
+      "url": null,
+      "license": "Internal Test Fixture",
+      "geographic_scope": "Delhi NCR Test Envelope",
+      "temporal_scope": "2024-2026",
+      "coordinate_precision": "GEODESIC_ESTIMATE",
+      "timestamp_precision": "HOURLY_UTC",
+      "severity_available": true,
+      "provenance_level": "PIPELINE_SYNTHETIC",
+      "verification_status": "VERIFIED",
+      "last_verified": "2026-08-31"
+    }
+  ],
+  "updated_at": "2026-09-02T03:07:10.756814Z"
+}

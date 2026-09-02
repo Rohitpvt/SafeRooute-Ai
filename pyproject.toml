@@ -1,0 +1,42 @@
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+exclude = '''
+(
+  /(
+      \.eggs
+    | \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+  | alembic/
+)
+'''
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+select = ["E", "F", "B", "I", "N", "UP", "A", "C4", "SIM", "ARG"]
+ignore = []
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".venv",
+    "venv",
+    "__pypackages__",
+    "_build",
+    "build",
+    "dist",
+    "alembic"
+]
+
+[tool.ruff.isort]
+known-first-party = ["app"]

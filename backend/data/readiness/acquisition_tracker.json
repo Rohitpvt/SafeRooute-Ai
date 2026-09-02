@@ -1,0 +1,41 @@
+{
+  "updated_at": "2026-09-01T00:35:00Z",
+  "sources": [
+    {
+      "source_id": "SRC-MORTH-IRAD-2024",
+      "source_name": "Integrated Road Accident Database (iRAD / eDAR)",
+      "organization": "Ministry of Road Transport and Highways (MoRTH)",
+      "status": "REQUEST_READY",
+      "last_verified": "2026-09-01",
+      "access_route": "Formal Institutional MoU / Academic Research Request",
+      "contact_placeholder": "[MoRTH iRAD National Program Director / NIC Division Head]",
+      "data_scope": "Delhi NCR Individual Micro-Crash GPS Records (2021-2025)",
+      "license_status": "Restricted Government Non-Commercial Research Access",
+      "next_action": "Submit formal academic research request draft via university department head"
+    },
+    {
+      "source_id": "SRC-DELHI-POLICE-2024",
+      "source_name": "Delhi Traffic Police Official Crash Reports & Blackspots",
+      "organization": "Delhi Traffic Police / Govt of NCT of Delhi",
+      "status": "REQUEST_READY",
+      "last_verified": "2026-09-01",
+      "access_route": "Open Government Portal / Formal Right-to-Information Data Request",
+      "contact_placeholder": "[Delhi Traffic Police Special Commissioner / Data Officer]",
+      "data_scope": "Delhi NCR Micro-Crash Incident Reports & 117 Blackspots",
+      "license_status": "Open Government Public Data / Academic MoU",
+      "next_action": "Submit data request draft for micro-level spatial logs"
+    },
+    {
+      "source_id": "SRC-OGD-INDIA-ACCIDENTS",
+      "source_name": "Open Government Data Platform India (data.gov.in)",
+      "organization": "National Informatics Centre (NIC) / OGD India",
+      "status": "DISCOVERY",
+      "last_verified": "2026-09-01",
+      "access_route": "Public Data Portal / OGD Portal Download",
+      "contact_placeholder": "[OGD India Program Manager]",
+      "data_scope": "National and Delhi State Road Accident Statistics & Catalogs",
+      "license_status": "Government Open Data License - India (GODL)",
+      "next_action": "Audit available catalog files for street-level GPS coordinates"
+    }
+  ]
+}

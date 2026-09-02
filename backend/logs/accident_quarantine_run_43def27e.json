@@ -1,0 +1,25 @@
+{
+  "run_id": "43def27e",
+  "quarantined_at": "2026-09-02T03:07:10.407178Z",
+  "total_quarantined": 1,
+  "records": [
+    {
+      "source_name": "Pipeline_Synthetic_Fixtures",
+      "source_record_id": "SYNTH-002",
+      "dataset_mode": "PIPELINE_SYNTHETIC",
+      "record_type": "ACCIDENT_RECORD",
+      "original_timestamp": "2026-08-30 10:00:00+00:00",
+      "severity": "Minor",
+      "latitude": 10.0,
+      "longitude": 10.0,
+      "raw_attributes": {
+        "fixture_id": "SYNTH-002",
+        "latitude": 10.0,
+        "longitude": 10.0,
+        "severity": "Minor",
+        "timestamp": "2026-08-30T10:00:00Z"
+      },
+      "reason": "out_of_region_bounds: (10.0, 10.0)"
+    }
+  ]
+}

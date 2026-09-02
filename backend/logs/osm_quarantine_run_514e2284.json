@@ -1,0 +1,15 @@
+{
+  "run_id": "514e2284",
+  "quarantined_at": "2026-09-01T03:55:42.857733Z",
+  "total_quarantined": 1,
+  "records": [
+    {
+      "osm_way_id": 100200300401,
+      "reason": "excluded_highway_class:footway",
+      "tags": {
+        "highway": "footway",
+        "name": "Park Pedestrian Path"
+      }
+    }
+  ]
+}

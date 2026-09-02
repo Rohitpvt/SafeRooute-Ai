@@ -1,0 +1,96 @@
+{
+  "run_id": "c01ae041",
+  "quarantined_at": "2026-08-31T18:02:14.484881Z",
+  "total_quarantined": 9,
+  "records": [
+    {
+      "osm_way_id": 7892804,
+      "reason": "excluded_highway_class:motorway_link",
+      "tags": {
+        "highway": "motorway_link",
+        "lanes": "2",
+        "layer": "0",
+        "motorcycle": "no",
+        "oneway": "yes"
+      }
+    },
+    {
+      "osm_way_id": 23151100,
+      "reason": "excluded_highway_class:path",
+      "tags": {
+        "highway": "path"
+      }
+    },
+    {
+      "osm_way_id": 24563340,
+      "reason": "excluded_highway_class:secondary_link",
+      "tags": {
+        "highway": "secondary_link",
+        "lane_markings": "no",
+        "maxspeed": "50",
+        "maxspeed:type": "sign",
+        "oneway": "yes",
+        "surface": "asphalt"
+      }
+    },
+    {
+      "osm_way_id": 24563438,
+      "reason": "excluded_highway_class:pedestrian",
+      "tags": {
+        "highway": "pedestrian"
+      }
+    },
+    {
+      "osm_way_id": 24563439,
+      "reason": "excluded_highway_class:pedestrian",
+      "tags": {
+        "highway": "pedestrian",
+        "name": "Shahjahan Road",
+        "name:etymology:wikidata": "Q83672",
+        "name:hi": "\u0936\u093e\u0939\u091c\u0939\u093e\u0902 \u0930\u094b\u0921",
+        "smoothness": "excellent",
+        "surface": "asphalt"
+      }
+    },
+    {
+      "osm_way_id": 24563440,
+      "reason": "excluded_highway_class:pedestrian",
+      "tags": {
+        "highway": "pedestrian",
+        "name": "Doctor Zakir Hussain Marg",
+        "name:etymology:wikidata": "Q144732",
+        "name:hi": "\u0921\u0949\u0915\u094d\u091f\u0930 \u091c\u093c\u093e\u0915\u093f\u0930 \u0939\u0941\u0938\u0948\u0928 \u092e\u093e\u0930\u094d\u0917",
+        "name:ur": "\u0688\u0627\u06a9\u0679\u0631 \u0630\u0627\u06a9\u0631 \u062d\u0633\u06cc\u0646 \u0645\u0627\u0631\u06af",
+        "smoothness": "excellent",
+        "surface": "asphalt"
+      }
+    },
+    {
+      "osm_way_id": 24563442,
+      "reason": "excluded_highway_class:pedestrian",
+      "tags": {
+        "highway": "pedestrian",
+        "name": "Tilak Marg",
+        "name:etymology:wikidata": "Q312555",
+        "name:hi": "\u0924\u093f\u0932\u0915 \u092e\u093e\u0930\u094d\u0917",
+        "surface": "asphalt"
+      }
+    },
+    {
+      "osm_way_id": 24563443,
+      "reason": "excluded_highway_class:pedestrian",
+      "tags": {
+        "highway": "pedestrian"
+      }
+    },
+    {
+      "osm_way_id": 24563444,
+      "reason": "excluded_highway_class:pedestrian",
+      "tags": {
+        "highway": "pedestrian",
+        "smoothness": "excellent",
+        "surface": "paving_stones"
+      }
+    }
+  ]
+}

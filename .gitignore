@@ -1,0 +1,60 @@
+# Python virtual environments
+venv/
+.venv/
+ENV/
+env/
+
+# Python compiled bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Frontend dependencies and builds
+frontend/node_modules/
+frontend/dist/
+frontend/.svelte-kit/
+frontend/build/
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# OS temporary files
+.DS_Store
+Thumbs.db
+
+# Environment secret configurations
+.env
+*.env
+**/.env
+.env.production
+.env.development
+.env.local
+backend/.env
+frontend/.env
+
+# ML model binaries and scaled components
+*.joblib
+*.pkl
+backend/ml/models/*.joblib
+backend/ml/models/*.joblib.tmp
+backend/ml/data/accident_training_processed.csv
+
+# Database & logs
+*.log
+*.db
+*.sqlite
+sqlite.db
+production.db
+backend/sqlite.db
+backend/production.db
+alembic.log
+postgres_data/
+backend/venv/
+backend/__pycache__/

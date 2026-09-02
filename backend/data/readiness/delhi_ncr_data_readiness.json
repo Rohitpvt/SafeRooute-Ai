@@ -1,0 +1,32 @@
+{
+  "evaluated_at": "2026-09-02T03:07:10.756814Z",
+  "readiness_level": 0,
+  "readiness_level_name": "LEVEL_0_PIPELINE_ONLY",
+  "research_ready": false,
+  "production_evaluation_ready": false,
+  "phase_7_authorized": false,
+  "inventory": {
+    "total_road_segments": 0,
+    "total_accident_records": 0,
+    "blackspot_records": 0,
+    "real_crash_records": 0,
+    "synthetic_records": 0,
+    "quarantined_records": 0,
+    "weather_observations": 0,
+    "unique_road_h3_cells": 0,
+    "unique_accident_h3_cells": 0,
+    "earliest_real_crash": null,
+    "latest_real_crash": null
+  },
+  "completeness": {
+    "coordinate_completeness_pct": 0.0,
+    "timestamp_completeness_pct": 0.0,
+    "severity_completeness_pct": 0.0,
+    "map_match_success_pct": 0.0
+  },
+  "blocking_reasons": [
+    "Insufficient multi-year real crash observations in Delhi NCR (Need >= 1000 micro-level crash events).",
+    "Phase 7 live risk scoring integration is strictly blocked until Level 3 Production Readiness is achieved."
+  ],
+  "duration_seconds": 0.0
+}

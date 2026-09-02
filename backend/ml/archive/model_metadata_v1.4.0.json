@@ -1,0 +1,33 @@
+{
+  "model_version": "1.4.0",
+  "training_date": "2026-08-31T03:44:37.607541Z",
+  "dataset_name": "87bd3a14af_test_accidents.csv",
+  "dataset_version": "1.4.0",
+  "algorithm": "RandomForestClassifier",
+  "hyperparameters": {
+    "n_estimators": 100,
+    "max_depth": 12,
+    "min_samples_split": 5,
+    "random_state": 42,
+    "class_weight": "balanced"
+  },
+  "evaluation_metrics": {
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1_score": 1.0
+  },
+  "confusion_matrix": [
+    [
+      2,
+      0
+    ],
+    [
+      0,
+      2
+    ]
+  ],
+  "training_time_seconds": 0.1075,
+  "inference_latency_seconds": 0.003202,
+  "model_size_bytes": 65593
+}

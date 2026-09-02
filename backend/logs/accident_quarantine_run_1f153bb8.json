@@ -1,0 +1,43 @@
+{
+  "run_id": "1f153bb8",
+  "quarantined_at": "2026-08-31T18:05:13.050585Z",
+  "total_quarantined": 2,
+  "records": [
+    {
+      "source_name": "Pipeline_Synthetic_Fixtures",
+      "source_record_id": "SYNTH-001",
+      "dataset_mode": "PIPELINE_SYNTHETIC",
+      "record_type": "ACCIDENT_RECORD",
+      "original_timestamp": "2026-08-30 10:00:00+00:00",
+      "severity": "Fatal",
+      "latitude": 28.8139,
+      "longitude": 77.809,
+      "raw_attributes": {
+        "fixture_id": "SYNTH-001",
+        "latitude": 28.8139,
+        "longitude": 77.809,
+        "severity": "Fatal",
+        "timestamp": "2026-08-30T10:00:00Z"
+      },
+      "reason": "out_of_region_bounds: (28.8139, 77.809)"
+    },
+    {
+      "source_name": "Pipeline_Synthetic_Fixtures",
+      "source_record_id": "SYNTH-002",
+      "dataset_mode": "PIPELINE_SYNTHETIC",
+      "record_type": "ACCIDENT_RECORD",
+      "original_timestamp": "2026-08-30 10:00:00+00:00",
+      "severity": "Minor",
+      "latitude": 10.0,
+      "longitude": 10.0,
+      "raw_attributes": {
+        "fixture_id": "SYNTH-002",
+        "latitude": 10.0,
+        "longitude": 10.0,
+        "severity": "Minor",
+        "timestamp": "2026-08-30T10:00:00Z"
+      },
+      "reason": "out_of_region_bounds: (10.0, 10.0)"
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+weather,traffic_density,road_type,average_speed,time_of_day,accident
+Clear,Low,Local,30.0,Morning,0
+Rainy,High,Highway,80.0,Night,1

@@ -1,0 +1,78 @@
+{
+  "model_version": "2.0.0",
+  "status": "PROMOTED_SYNTHETIC_DEVELOPMENT",
+  "training_date": "2026-09-02T08:36:11.716289Z",
+  "dataset_name": "synthetic_hazard_events_10k",
+  "dataset_version": "2.0.0",
+  "total_samples": 10000,
+  "train_samples": 8000,
+  "test_samples": 2000,
+  "class_distribution": {
+    "0": 5772,
+    "1": 4228
+  },
+  "algorithm": "RandomForestClassifier",
+  "hyperparameters": {
+    "n_estimators": 100,
+    "max_depth": 12,
+    "min_samples_split": 5,
+    "random_state": 42,
+    "class_weight": "balanced"
+  },
+  "feature_names": [
+    "average_speed",
+    "traffic_density",
+    "weather_Rainy",
+    "weather_Snowy",
+    "weather_Foggy",
+    "weather_Windy",
+    "road_type_Arterial",
+    "road_type_Local",
+    "road_type_Expressway",
+    "time_of_day_Afternoon",
+    "time_of_day_Evening",
+    "time_of_day_Night"
+  ],
+  "cv_metrics_5fold": {
+    "mean_accuracy": 0.6141,
+    "mean_precision": 0.5438,
+    "mean_recall": 0.5408,
+    "mean_f1": 0.5422,
+    "mean_roc_auc": 0.6537
+  },
+  "evaluation_metrics": {
+    "accuracy": 0.601,
+    "precision": 0.5284,
+    "recall": 0.5284,
+    "f1_score": 0.5284,
+    "roc_auc": 0.6404
+  },
+  "confusion_matrix": [
+    [
+      755,
+      399
+    ],
+    [
+      399,
+      447
+    ]
+  ],
+  "feature_importances": {
+    "average_speed": 0.5996965924078521,
+    "traffic_density": 0.10964828832614584,
+    "weather_Rainy": 0.021223585175884536,
+    "weather_Snowy": 0.03470659535781962,
+    "weather_Foggy": 0.027843312873236034,
+    "weather_Windy": 0.03278057604881458,
+    "road_type_Arterial": 0.03254112730169278,
+    "road_type_Local": 0.033164106522267804,
+    "road_type_Expressway": 0.02233645587628741,
+    "time_of_day_Afternoon": 0.019016877513513948,
+    "time_of_day_Evening": 0.021836098267233657,
+    "time_of_day_Night": 0.04520638432925176
+  },
+  "training_time_seconds": 0.5073,
+  "inference_latency_seconds": 0.002705,
+  "model_size_bytes": 15209273,
+  "model_nature_warning": "DEVELOPMENT / SYNTHETIC DATA MODEL \u2014 NOT VALID FOR REAL WORLD CRASH PREDICTION"
+}

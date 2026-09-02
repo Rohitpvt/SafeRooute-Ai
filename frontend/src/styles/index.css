@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-primary-dark text-gray-100 font-sans antialiased;
+    margin: 0;
+  }
+}
+
+/* High-contrast dark tactical filter for OpenStreetMap keyless basemap tiles */
+.dark-tile-filter {
+  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
+}

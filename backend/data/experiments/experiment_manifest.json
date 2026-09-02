@@ -1,0 +1,64 @@
+{
+  "experiment_id": "EXP-1788318431",
+  "dataset_mode": "PIPELINE_SYNTHETIC",
+  "models_evaluated": [
+    "Baseline_LogisticRegression",
+    "Baseline_Production_RF_v1.6",
+    "MultiSource_RandomForest",
+    "MultiSource_LightGBM",
+    "MultiSource_GradientBoosting"
+  ],
+  "benchmark_matrix": {
+    "Baseline_LogisticRegression": {
+      "pr_auc": 0.603,
+      "roc_auc": 0.4399,
+      "precision": 0.5185,
+      "recall": 0.6087,
+      "f1": 0.56,
+      "brier_score": 0.2896,
+      "false_negative_rate": 0.3913
+    },
+    "Baseline_Production_RF_v1.6": {
+      "pr_auc": 0.5266,
+      "roc_auc": 0.335,
+      "precision": 0.5,
+      "recall": 0.6087,
+      "f1": 0.549,
+      "brier_score": 0.3192,
+      "false_negative_rate": 0.3913
+    },
+    "MultiSource_RandomForest": {
+      "pr_auc": 0.5979,
+      "roc_auc": 0.4616,
+      "precision": 0.5217,
+      "recall": 0.5217,
+      "f1": 0.5217,
+      "brier_score": 0.2637,
+      "false_negative_rate": 0.4783
+    },
+    "MultiSource_LightGBM": {
+      "pr_auc": 0.6258,
+      "roc_auc": 0.5243,
+      "precision": 0.5833,
+      "recall": 0.6087,
+      "f1": 0.5957,
+      "brier_score": 0.285,
+      "false_negative_rate": 0.3913
+    },
+    "MultiSource_GradientBoosting": {
+      "pr_auc": 0.6622,
+      "roc_auc": 0.5064,
+      "precision": 0.5455,
+      "recall": 0.5217,
+      "f1": 0.5333,
+      "brier_score": 0.2971,
+      "false_negative_rate": 0.4783
+    }
+  },
+  "best_model": "MultiSource_GradientBoosting",
+  "best_pr_auc": 0.6622,
+  "raw_brier": 0.285,
+  "calibrated_brier": 0.2441,
+  "production_artifacts_untouched": true,
+  "duration_seconds": 0.53
+}

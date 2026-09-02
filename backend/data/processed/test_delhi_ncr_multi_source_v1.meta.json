@@ -1,0 +1,15 @@
+{
+  "dataset_version": "1.0.0",
+  "region": "delhi_ncr",
+  "dataset_mode": "PIPELINE_SYNTHETIC",
+  "created_at": "2026-09-02T03:07:10.625026Z",
+  "row_count": 2,
+  "positive_count": 1,
+  "negative_count": 1,
+  "feature_count": 25,
+  "leakage_audit": {
+    "leak_violations": 0,
+    "status": "PASS"
+  },
+  "parquet_file": "data\\processed\\test_delhi_ncr_multi_source_v1.parquet"
+}

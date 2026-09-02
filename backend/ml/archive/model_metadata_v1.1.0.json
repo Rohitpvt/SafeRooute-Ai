@@ -1,0 +1,33 @@
+{
+  "model_version": "1.1.0",
+  "training_date": "2026-07-28T04:35:45.564999Z",
+  "dataset_name": "synthetic_fallback.csv",
+  "dataset_version": "1.1.0",
+  "algorithm": "RandomForestClassifier",
+  "hyperparameters": {
+    "n_estimators": 100,
+    "max_depth": 12,
+    "min_samples_split": 5,
+    "random_state": 42,
+    "class_weight": "balanced"
+  },
+  "evaluation_metrics": {
+    "accuracy": 0.601,
+    "precision": 0.5284,
+    "recall": 0.5284,
+    "f1_score": 0.5284
+  },
+  "confusion_matrix": [
+    [
+      755,
+      399
+    ],
+    [
+      399,
+      447
+    ]
+  ],
+  "training_time_seconds": 0.6023,
+  "inference_latency_seconds": 0.002849,
+  "model_size_bytes": 15209449
+}
