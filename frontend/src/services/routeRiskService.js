@@ -18,7 +18,8 @@ export const RISK_CATEGORIES = {
 };
 
 /**
- * Maps a numeric risk score (0-100) to its authoritative category name and hex color.
+ * Maps a numeric risk score (0-100) to its category name and hex color.
+ * Calibrated for model probability distribution (Low <= 30, Medium 31-45, High 46-58, Critical >= 59).
  */
 export function getRiskCategoryAndColor(score) {
   if (score === null || score === undefined || isNaN(score)) {
@@ -160,6 +161,9 @@ export async function calculateRouteWithRisk({
       longitude: parseFloat(destination.longitude),
       location_name: destination.location_name || "Destination Location",
     },
+    weather: weather,
+    traffic_density: traffic_density,
+    time_of_day: time_of_day,
   });
 
   if (!routeResponse || !routeResponse.success || !routeResponse.data) {
@@ -182,7 +186,7 @@ export async function calculateRouteWithRisk({
     segments: segments.map((seg) => ({
       segment_id: seg.segment_id,
       weather: weather,
-      traffic_density: traffic_density,
+      traffic_density: seg.traffic_density || traffic_density,
       road_type: seg.road_type || "Arterial",
       average_speed: Number(seg.speed_kmh) || 45.0,
       time_of_day: time_of_day,
@@ -195,11 +199,13 @@ export async function calculateRouteWithRisk({
   // 3. Fire Batch ML Risk Scoring Request (with partial failure resilience)
   let batchPredictionsMap = {};
   let riskEvaluationStatus = "SUCCESS";
+  let activeModelVersion = "2.0.0";
 
   try {
     const batchResponse = await apiClient.post("/predict/batch", batchPayload);
     if (batchResponse && batchResponse.success && batchResponse.data) {
       const preds = batchResponse.data.predictions || [];
+      activeModelVersion = batchResponse.data.model_version || "2.0.0";
       preds.forEach((pred) => {
         batchPredictionsMap[pred.segment_id] = pred;
       });
@@ -218,7 +224,7 @@ export async function calculateRouteWithRisk({
     let confidence_score = null;
     let risk_category = RISK_CATEGORIES.UNAVAILABLE;
     let color = RISK_COLORS.UNAVAILABLE;
-    let model_version = "Unknown";
+    let model_version = activeModelVersion;
     let prediction_timestamp = null;
 
     if (pred) {
@@ -226,7 +232,7 @@ export async function calculateRouteWithRisk({
       confidence_score = pred.confidence_score;
       risk_category = pred.risk_category;
       color = getRiskCategoryAndColor(risk_score).color;
-      model_version = "1.27.0";
+      model_version = pred.model_version || activeModelVersion;
       prediction_timestamp = new Date().toISOString();
     }
 

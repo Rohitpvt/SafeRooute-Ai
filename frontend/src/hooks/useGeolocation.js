@@ -25,6 +25,8 @@ export const getAccuracyLabel = (accuracy) => {
   return { label: "Poor Accuracy", color: "text-red-400", level: "poor" };
 };
 
+
+
 export function useGeolocation() {
   const [status, setStatus] = useState(GPS_STATES.IDLE);
   const [position, setPosition] = useState(null);

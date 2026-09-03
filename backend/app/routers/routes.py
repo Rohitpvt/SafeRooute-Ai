@@ -21,9 +21,33 @@ from app.services.routing_service import (
 from app.services.segmentation_engine import segmentation_engine
 from app.services.feature_enrichment import feature_enrichment_service
 from app.services.ai_geocoding_service import AIGeocodingService
+from app.services.live_weather_service import live_weather_service
 from app.utils.responses import build_api_response
 
 router = APIRouter(tags=["routes"])
+
+
+@router.get("/routes/weather/current")
+async def get_current_weather(
+    lat: float,
+    lng: float,
+    request: Request,
+):
+    """
+    Fetches normalized current environmental weather context for given coordinates.
+    Returns normalized weather state, quality state, observed/fetched timestamps, and parameters.
+    """
+    request_id = getattr(request.state, "request_id", None)
+    result = await live_weather_service.fetch_current_weather(lat, lng)
+
+    return build_api_response(
+        success=True,
+        message=f"Environmental weather context status: {result['quality']}.",
+        data=result,
+        status_code=status.HTTP_200_OK,
+        request_id=request_id,
+    )
+
 
 
 @router.post("/routes/geocode")
@@ -89,7 +113,12 @@ async def preview_route(
         )
 
         # 3. Feature Enrichment (Metadata & ML Feature Vector Preparation)
-        enriched_segments = feature_enrichment_service.enrich_route_segments(segmented_blocks)
+        enriched_segments = feature_enrichment_service.enrich_route_segments(
+            segmented_blocks,
+            weather_override=payload.weather,
+            traffic_override=payload.traffic_density,
+            time_of_day_override=payload.time_of_day,
+        )
 
         route_id = f"route_{uuid.uuid4().hex[:12]}"
 

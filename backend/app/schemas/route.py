@@ -24,6 +24,9 @@ class LocationCoordinates(BaseModel):
 class RoutePreviewRequest(BaseModel):
     origin: LocationCoordinates = Field(..., description="Origin location coordinates.")
     destination: LocationCoordinates = Field(..., description="Destination location coordinates.")
+    weather: str = Field("Clear", description="Weather override.")
+    traffic_density: str = Field("Low", description="Traffic density override.")
+    time_of_day: str = Field("Afternoon", description="Time of day override.")
 
 
 class EnrichedSegmentData(BaseModel):

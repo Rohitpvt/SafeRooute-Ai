@@ -9,7 +9,10 @@ export default function LiveTelemetry({
   weather,
   trafficDensity,
   roadType,
+  weatherBadge = "Auto",
+  trafficBadge = "Manual",
 }) {
+
   return (
     <div className="flex flex-col gap-3">
       {/* Primary Speed & Position Gauge */}
@@ -69,22 +72,28 @@ export default function LiveTelemetry({
           </div>
 
           {/* Weather */}
-          <div className="flex items-center justify-between bg-slate-900/80 px-2.5 py-1.5 rounded border border-slate-800/60">
-            <span className="text-slate-400">Weather</span>
-            <span className="font-semibold text-slate-200 flex items-center gap-1">
-              {weather}
-              <span className="text-[9px] text-slate-500 font-mono bg-slate-950 px-1 rounded border border-slate-800">Manual</span>
+          <div className="flex items-center justify-between bg-slate-900/80 px-2.5 py-1.5 rounded border border-slate-800/60 min-w-0">
+            <span className="text-slate-400 flex-shrink-0">Weather</span>
+            <span className="font-semibold text-slate-200 flex items-center gap-1 min-w-0 ml-1">
+              <span className="truncate">{weather === "Weather OK" ? "Clear" : weather}</span>
+              <span className={`flex-shrink-0 text-[9px] font-mono px-1 rounded border ${weatherBadge === "Auto" || weatherBadge === "Live" ? "bg-emerald-950 text-emerald-400 border-emerald-800" : "bg-slate-950 text-slate-500 border-slate-800"}`}>
+                {weatherBadge}
+              </span>
             </span>
           </div>
 
           {/* Traffic Density */}
-          <div className="flex items-center justify-between bg-slate-900/80 px-2.5 py-1.5 rounded border border-slate-800/60">
-            <span className="text-slate-400">Traffic</span>
-            <span className="font-semibold text-slate-200 flex items-center gap-1">
-              {trafficDensity}
-              <span className="text-[9px] text-slate-500 font-mono bg-slate-950 px-1 rounded border border-slate-800">Manual</span>
+          <div className="flex items-center justify-between bg-slate-900/80 px-2.5 py-1.5 rounded border border-slate-800/60 min-w-0">
+            <span className="text-slate-400 flex-shrink-0">Traffic</span>
+            <span className="font-semibold text-slate-200 flex items-center gap-1 min-w-0 ml-1">
+              <span className="truncate">{trafficDensity}</span>
+              <span className={`flex-shrink-0 text-[9px] font-mono px-1 rounded border ${trafficBadge === "Auto" || trafficBadge === "Live" ? "bg-emerald-950 text-emerald-400 border-emerald-800" : "bg-slate-950 text-slate-500 border-slate-800"}`}>
+                {trafficBadge}
+              </span>
             </span>
           </div>
+
+
         </div>
       </div>
     </div>

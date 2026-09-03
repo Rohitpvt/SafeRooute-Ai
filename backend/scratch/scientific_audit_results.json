@@ -1,0 +1,158 @@
+{
+  "dataset_sha256": "fb6f9f4078dc1baec41f336d9083bf36746293aa4658728ac307bbb064fd7105",
+  "majority_baseline": {
+    "accuracy": 0.577,
+    "f1": 0.0
+  },
+  "random_baseline": {
+    "accuracy": 0.4925,
+    "f1": 0.4068
+  },
+  "logistic_regression": {
+    "accuracy": 0.6435,
+    "precision": 0.6022,
+    "recall": 0.4634,
+    "f1": 0.5237,
+    "roc_auc": 0.6984,
+    "cm": [
+      [
+        895,
+        259
+      ],
+      [
+        454,
+        392
+      ]
+    ]
+  },
+  "random_forest": {
+    "accuracy": 0.601,
+    "precision": 0.5284,
+    "recall": 0.5284,
+    "f1": 0.5284,
+    "roc_auc": 0.6404,
+    "cm": [
+      [
+        755,
+        399
+      ],
+      [
+        399,
+        447
+      ]
+    ]
+  },
+  "brier_score_rf": 0.2386,
+  "brier_score_lr": 0.2152,
+  "reliability_bins": [
+    {
+      "bin": "[0.0-0.2)",
+      "count": 254,
+      "mean_pred": 0.1295,
+      "mean_true": 0.2283
+    },
+    {
+      "bin": "[0.2-0.4)",
+      "count": 543,
+      "mean_pred": 0.302,
+      "mean_true": 0.3241
+    },
+    {
+      "bin": "[0.4-0.6)",
+      "count": 661,
+      "mean_pred": 0.495,
+      "mean_true": 0.466
+    },
+    {
+      "bin": "[0.6-0.8)",
+      "count": 399,
+      "mean_pred": 0.6854,
+      "mean_true": 0.4862
+    },
+    {
+      "bin": "[0.8-1.0)",
+      "count": 143,
+      "mean_pred": 0.8691,
+      "mean_true": 0.7692
+    }
+  ],
+  "threshold_analysis": [
+    {
+      "threshold": 0.1,
+      "accuracy": 0.442,
+      "precision": 0.4301,
+      "recall": 0.9811,
+      "f1_score": 0.598
+    },
+    {
+      "threshold": 0.2,
+      "accuracy": 0.492,
+      "precision": 0.4513,
+      "recall": 0.9314,
+      "f1_score": 0.608
+    },
+    {
+      "threshold": 0.3,
+      "accuracy": 0.543,
+      "precision": 0.477,
+      "recall": 0.8322,
+      "f1_score": 0.6064
+    },
+    {
+      "threshold": 0.4,
+      "accuracy": 0.5875,
+      "precision": 0.5087,
+      "recall": 0.7234,
+      "f1_score": 0.5974
+    },
+    {
+      "threshold": 0.5,
+      "accuracy": 0.601,
+      "precision": 0.5284,
+      "recall": 0.5284,
+      "f1_score": 0.5284
+    },
+    {
+      "threshold": 0.6,
+      "accuracy": 0.61,
+      "precision": 0.5609,
+      "recall": 0.3593,
+      "f1_score": 0.438
+    },
+    {
+      "threshold": 0.7,
+      "accuracy": 0.6185,
+      "precision": 0.6407,
+      "recall": 0.2234,
+      "f1_score": 0.3313
+    },
+    {
+      "threshold": 0.8,
+      "accuracy": 0.6155,
+      "precision": 0.7692,
+      "recall": 0.13,
+      "f1_score": 0.2224
+    },
+    {
+      "threshold": 0.9,
+      "accuracy": 0.5875,
+      "precision": 0.7838,
+      "recall": 0.0343,
+      "f1_score": 0.0657
+    }
+  ],
+  "mutual_information": {
+    "average_speed": 0.0065,
+    "traffic_density": 0.0111,
+    "weather_Rainy": 0.0,
+    "weather_Snowy": 0.0062,
+    "weather_Foggy": 0.0149,
+    "weather_Windy": 0.0139,
+    "road_type_Arterial": 0.0,
+    "road_type_Local": 0.01,
+    "road_type_Expressway": 0.0033,
+    "time_of_day_Afternoon": 0.0034,
+    "time_of_day_Evening": 0.0,
+    "time_of_day_Night": 0.0087
+  }
+}

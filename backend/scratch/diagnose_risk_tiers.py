@@ -1,103 +1,70 @@
-"""
-Diagnostic: Test every combination of road_type × weather × traffic × time × speed 
-to understand the model's actual output distribution.
-"""
-import sys
-sys.path.insert(0, ".")
+import asyncio
+import httpx
 
-import pandas as pd
-import numpy as np
-# pyrefly: ignore [missing-import]
-from ml.model_manager import model_manager
+async def test_route_risk():
+    # 1. Register & login
+    async with httpx.AsyncClient() as client:
+        import uuid
+        test_email = f"diag_{uuid.uuid4().hex[:6]}@example.com"
+        await client.post("http://127.0.0.1:8000/api/v1/auth/register", json={
+            "email": test_email,
+            "full_name": "Diag User",
+            "password": "Password123!",
+            "password_confirm": "Password123!"
+        })
+        login = await client.post("http://127.0.0.1:8000/api/v1/auth/login", json={
+            "email": test_email,
+            "password": "Password123!"
+        })
+        login_json = login.json()
+        print("Login JSON:", login_json)
+        token = login_json.get("data", {}).get("access_token")
+        headers = {"Authorization": f"Bearer {token}"}
 
-model = model_manager.get_model()
-preprocessor = model_manager.get_preprocessor()
-metadata = model_manager.get_metadata()
+        # 2. Preview route from Jahangir Puri (28.7180, 77.1650) to Ghaziabad (28.6692, 77.4538)
+        route_resp = await client.post("http://127.0.0.1:8000/api/v1/routes/preview", headers=headers, json={
+            "origin": {"latitude": 28.7180, "longitude": 77.1650, "location_name": "Jahangir Puri"},
+            "destination": {"latitude": 28.6692, "longitude": 77.4538, "location_name": "Ghaziabad"}
+        })
+        print("Route preview status:", route_resp.status_code)
+        print("Route preview response:", route_resp.text[:500])
+        route_json = route_resp.json()
+        if not route_json.get("success"):
+            return
+        route_data = route_json["data"]
+        steps = route_data.get("steps", [])
+        print(f"OSRM Steps count: {len(steps)}")
+        for idx, st in enumerate(steps):
+            print(f"Step {idx}: name='{st.get('road_name')}', osm_hw='{st.get('osm_highway')}', road_type='{st.get('road_type')}', dist={st.get('distance_m')}, speed={st.get('speed_kmh')}")
 
-print(f"Model Version: {metadata.get('model_version', 'unknown')}")
-print(f"Model Type: {type(model).__name__}")
-print(f"Model Classes: {model.classes_}")
+        segments = route_data["segments"]
+        print(f"\nTotal Segments returned by /routes/preview: {len(segments)}")
 
-# Enumerate feature values
-weather_options = ["Clear", "Rainy", "Foggy", "Snowy", "Windy"]
-traffic_options = ["Low", "Medium", "High"]
-road_types = ["Local", "Arterial", "Highway", "Expressway"]
-time_options = ["Morning", "Afternoon", "Evening", "Night"]
-speeds = [15.0, 25.0, 35.0, 45.0, 60.0, 80.0, 100.0]
+        # Print segment details (road_type, speed, distance)
+        for i, s in enumerate(segments[:15]):
+            print(f"Seg {i}: name='{s['road_name']}', road_type='{s.get('road_type')}', speed={s.get('speed_kmh')}, dist={s.get('distance_m')}")
 
-# Build a comprehensive feature grid
-rows = []
-for w in weather_options:
-    for t in traffic_options:
-        for r in road_types:
-            for tod in time_options:
-                for s in speeds:
-                    rows.append({
-                        "weather": w,
-                        "traffic_density": t,
-                        "road_type": r,
-                        "average_speed": s,
-                        "time_of_day": tod,
-                    })
+        # 3. Predict batch risk
+        batch_payload = {
+            "segments": [{
+                "segment_id": s["segment_id"],
+                "weather": "Rainy",
+                "traffic_density": "High",
+                "road_type": s.get("road_type", "Arterial"),
+                "average_speed": float(s.get("speed_kmh") or 45.0),
+                "time_of_day": "Night",
+                "latitude": float(s["centroid_latitude"]),
+                "longitude": float(s["centroid_longitude"]),
+                "location_name": s["road_name"]
+            } for s in segments]
+        }
 
-df = pd.DataFrame(rows)
-print(f"\nTotal Combinations: {len(df)}")
+        batch_resp = await client.post("http://127.0.0.1:8000/api/v1/predict/batch", headers=headers, json=batch_payload)
+        batch_data = batch_resp.json()["data"]
+        preds = batch_data["predictions"]
+        print("\nPrediction Results across segments:")
+        for i, p in enumerate(preds[:15]):
+            print(f"Seg {i}: risk_score={p['risk_score']}, risk_category='{p['risk_category']}', conf={p['confidence_score']}")
 
-# Predict all at once
-processed = preprocessor.transform(df)
-probas = model.predict_proba(processed)
-accident_probs = probas[:, 1]
-risk_scores = np.round(accident_probs * 100).astype(int)
-
-df["risk_score"] = risk_scores
-
-# Summarize distribution
-print(f"\n=== RISK SCORE DISTRIBUTION ===")
-print(f"Min: {risk_scores.min()}")
-print(f"Max: {risk_scores.max()}")
-print(f"Mean: {risk_scores.mean():.2f}")
-print(f"Median: {np.median(risk_scores):.1f}")
-print(f"Std Dev: {risk_scores.std():.2f}")
-
-# Count by category
-low = np.sum(risk_scores <= 25)
-medium = np.sum((risk_scores > 25) & (risk_scores <= 50))
-high = np.sum((risk_scores > 50) & (risk_scores <= 75))
-critical = np.sum(risk_scores > 75)
-print(f"\nLow (0-25):      {low} ({low/len(risk_scores)*100:.1f}%)")
-print(f"Medium (26-50):  {medium} ({medium/len(risk_scores)*100:.1f}%)")
-print(f"High (51-75):    {high} ({high/len(risk_scores)*100:.1f}%)")
-print(f"Critical (76+):  {critical} ({critical/len(risk_scores)*100:.1f}%)")
-
-# Show unique risk scores
-unique_scores = sorted(np.unique(risk_scores))
-print(f"\nUnique Risk Scores ({len(unique_scores)}): {unique_scores}")
-
-# Show top 20 highest-risk combos
-print(f"\n=== TOP 20 HIGHEST RISK COMBINATIONS ===")
-top_idx = np.argsort(-risk_scores)[:20]
-for i, idx in enumerate(top_idx):
-    row = df.iloc[idx]
-    print(f"  {i+1}. Score={row['risk_score']:3d}  Weather={row['weather']:6s}  Traffic={row['traffic_density']:6s}  Road={row['road_type']:10s}  Time={row['time_of_day']:9s}  Speed={row['average_speed']:5.1f}")
-
-# Show bottom 10 lowest-risk combos
-print(f"\n=== TOP 10 LOWEST RISK COMBINATIONS ===")
-bot_idx = np.argsort(risk_scores)[:10]
-for i, idx in enumerate(bot_idx):
-    row = df.iloc[idx]
-    print(f"  {i+1}. Score={row['risk_score']:3d}  Weather={row['weather']:6s}  Traffic={row['traffic_density']:6s}  Road={row['road_type']:10s}  Time={row['time_of_day']:9s}  Speed={row['average_speed']:5.1f}")
-
-# Per-feature marginal influence
-print(f"\n=== MARGINAL FEATURE INFLUENCE ===")
-for feature_name, options in [
-    ("weather", weather_options),
-    ("traffic_density", traffic_options),
-    ("road_type", road_types),
-    ("time_of_day", time_options),
-    ("average_speed", speeds),
-]:
-    print(f"\n  {feature_name}:")
-    for val in options:
-        mask = df[feature_name] == val
-        scores = df.loc[mask, "risk_score"]
-        print(f"    {str(val):12s} -> Mean={scores.mean():6.2f}  Min={scores.min():3d}  Max={scores.max():3d}")
+if __name__ == "__main__":
+    asyncio.run(test_route_risk())

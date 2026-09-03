@@ -70,12 +70,12 @@ class PredictionService:
         predicted_class = 1 if accident_probability >= 0.5 else 0
         confidence_score = float(probabilities[predicted_class])
 
-        # Resolve Risk Category
-        if risk_score <= 25:
+        # Resolve Risk Category (Calibrated Model Thresholds)
+        if risk_score <= 30:
             risk_category = "Low"
-        elif risk_score <= 50:
+        elif risk_score <= 45:
             risk_category = "Medium"
-        elif risk_score <= 75:
+        elif risk_score <= 58:
             risk_category = "High"
         else:
             risk_category = "Critical"
@@ -175,11 +175,11 @@ class PredictionService:
             predicted_class = 1 if accident_prob >= 0.5 else 0
             confidence_score = float(probs[predicted_class])
 
-            if risk_score <= 25:
+            if risk_score <= 30:
                 risk_category = "Low"
-            elif risk_score <= 50:
+            elif risk_score <= 45:
                 risk_category = "Medium"
-            elif risk_score <= 75:
+            elif risk_score <= 58:
                 risk_category = "High"
                 high_risk_count += 1
             else:
@@ -204,11 +204,11 @@ class PredictionService:
 
         avg_risk_score = int(round(total_risk_score_sum / total_segments)) if total_segments > 0 else 0
 
-        if avg_risk_score <= 25:
+        if avg_risk_score <= 30:
             overall_category = "Low"
-        elif avg_risk_score <= 50:
+        elif avg_risk_score <= 45:
             overall_category = "Medium"
-        elif avg_risk_score <= 75:
+        elif avg_risk_score <= 58:
             overall_category = "High"
         else:
             overall_category = "Critical"

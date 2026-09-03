@@ -51,11 +51,11 @@ def map_osm_highway_to_road_type(osm_highway: str | None, road_name: str | None 
     """Translates OpenStreetMap highway tag and road name string into SafeRoute AI taxonomy."""
     if road_name:
         name_lower = str(road_name).lower()
-        if any(w in name_lower for w in ["expressway", "motorway", "freeway"]):
+        if any(w in name_lower for w in ["expressway", "motorway", "freeway", "tollway", "yamuna", "noida-greater"]):
             return EXPRESSWAY
-        if any(w in name_lower for w in ["highway", "nh-", "nh ", "national highway", "bypass", "flyover", "gt road", "grand trunk"]):
+        if any(w in name_lower for w in ["highway", "nh-", "nh ", "national highway", "bypass", "flyover", "gt road", "grand trunk", "corridor", "state highway", "sh-"]):
             return HIGHWAY
-        if any(w in name_lower for w in ["ring road", "outer ring", "inner ring", "marg", "path", "road", "avenue", "blvd", "boulevard"]):
+        if any(w in name_lower for w in ["ring road", "outer ring", "inner ring", "marg", "road", "rd", "avenue", "blvd", "boulevard", "circle", "chowk", "square", "path", "way", "lane", "street", "drive"]):
             return ARTERIAL
 
     if not osm_highway:

@@ -73,11 +73,12 @@ export function useLiveRiskAssessment({
           position.longitude
         );
 
-        if (dist < 5 && timeSinceLast < cooldown * 2) {
-          // Skip redundant assessment if vehicle has barely moved (<5m) and < 2x cooldown elapsed
+        if (dist < 5 && timeSinceLast < cooldown) {
+          // Skip redundant assessment if vehicle has barely moved (<5m) and cooldown has not elapsed
           return;
         }
       }
+
 
       isRequestInFlightRef.current = true;
       setIsEvaluating(true);
@@ -151,35 +152,45 @@ export function useLiveRiskAssessment({
     [position, speedKmH, timeOfDay, weather, trafficDensity, roadType, riskData, onPredictionSuccess, getActiveCooldownMs]
   );
 
-  // Auto-trigger evaluator when position updates while enabled
+  // Auto-trigger evaluator periodically (5s idle / 2s moving) or when position updates
   useEffect(() => {
     if (!enabled || !position) return;
 
-    const now = Date.now();
-    const timeSinceLast = now - lastRequestTimestampRef.current;
-    const cooldown = getActiveCooldownMs();
+    const checkAndEvaluate = () => {
+      const now = Date.now();
+      const timeSinceLast = now - lastRequestTimestampRef.current;
+      const cooldown = getActiveCooldownMs();
 
-    // Check movement threshold (>= 50m)
-    let moved50m = false;
-    if (lastEvaluatedPosRef.current) {
-      const dist = calculateHaversineDistanceMeters(
-        lastEvaluatedPosRef.current.latitude,
-        lastEvaluatedPosRef.current.longitude,
-        position.latitude,
-        position.longitude
-      );
-      if (dist >= MOVEMENT_TRIGGER_METERS) {
-        moved50m = true;
+      let movedTrigger = false;
+      if (lastEvaluatedPosRef.current) {
+        const dist = calculateHaversineDistanceMeters(
+          lastEvaluatedPosRef.current.latitude,
+          lastEvaluatedPosRef.current.longitude,
+          position.latitude,
+          position.longitude
+        );
+        if (dist >= MOVEMENT_TRIGGER_METERS) {
+          movedTrigger = true;
+        }
+      } else {
+        // First acquisition
+        movedTrigger = true;
       }
-    } else {
-      // First acquisition
-      moved50m = true;
-    }
 
-    if (moved50m || timeSinceLast >= cooldown) {
-      executePrediction(false);
-    }
+      if (movedTrigger || timeSinceLast >= cooldown) {
+        executePrediction(false);
+      }
+    };
+
+    // Immediate check on position update
+    checkAndEvaluate();
+
+    // 1-second ticker to guarantee exact 5s (idle) / 2s (moving) risk re-evaluations
+    const intervalId = setInterval(checkAndEvaluate, 1000);
+
+    return () => clearInterval(intervalId);
   }, [enabled, position, executePrediction, getActiveCooldownMs]);
+
 
   // Clean up alert timer on unmount
   useEffect(() => {

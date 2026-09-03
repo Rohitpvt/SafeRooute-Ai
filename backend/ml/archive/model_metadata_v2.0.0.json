@@ -1,6 +1,6 @@
 {
   "model_version": "2.0.0",
-  "status": "PROMOTED_SYNTHETIC_DEVELOPMENT",
+  "status": "SYNTHETIC_DEVELOPMENT_MODEL",
   "training_date": "2026-09-02T08:36:11.716289Z",
   "dataset_name": "synthetic_hazard_events_10k",
   "dataset_version": "2.0.0",
@@ -74,5 +74,5 @@
   "training_time_seconds": 0.5073,
   "inference_latency_seconds": 0.002705,
   "model_size_bytes": 15209273,
-  "model_nature_warning": "DEVELOPMENT / SYNTHETIC DATA MODEL \u2014 NOT VALID FOR REAL WORLD CRASH PREDICTION"
+  "model_nature_warning": "DEVELOPMENT / SYNTHETIC DATA MODEL — NOT VALID FOR REAL WORLD CRASH PREDICTION"
 }

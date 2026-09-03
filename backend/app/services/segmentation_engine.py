@@ -101,74 +101,134 @@ class RouteSegmentationEngine:
                 }
             ]
 
-        # Hybrid Segmentation Pipeline
+        # Hybrid Segmentation Pipeline: Use step geometries if available, or track step cumulative distance bounds
         raw_segments: List[Dict[str, Any]] = []
-        current_segment_coords = [all_coords[0]]
-        current_distance = 0.0
-        current_road_type = steps[0].get("road_type", LOCAL) if steps else LOCAL
-        current_road_name = steps[0].get("road_name", "Road Segment") if steps else "Road Segment"
-        current_step_ids = [steps[0]["step_id"]] if steps else ["step_000"]
 
-        step_cursor = 0
+        if steps and any("geometry" in s and s["geometry"] and "coordinates" in s["geometry"] for s in steps):
+            # Step-based partitioning using exact maneuver leg geometries
+            for s_idx, step_obj in enumerate(steps):
+                geom = step_obj.get("geometry", {})
+                s_coords = geom.get("coordinates", []) if isinstance(geom, dict) else []
+                if not s_coords or len(s_coords) < 2:
+                    continue
 
-        for i in range(len(all_coords) - 1):
-            p1 = all_coords[i]
-            p2 = all_coords[i + 1]
-            dist_step = haversine_distance_meters(p1[1], p1[0], p2[1], p2[0])
+                s_dist = calculate_linestring_length_meters(s_coords)
+                s_name = step_obj.get("road_name", "Road Segment")
+                s_type = step_obj.get("road_type", LOCAL)
+                s_speed = step_obj.get("speed_kmh")
+                s_id = step_obj.get("step_id", f"step_{s_idx:03d}")
 
-            # Determine active step metadata matching vertex location
-            if steps and step_cursor < len(steps) - 1:
-                # Check if current point passed into next maneuver step
-                step_obj = steps[step_cursor]
-                new_type = step_obj.get("road_type", LOCAL)
-                new_name = step_obj.get("road_name", "Road Segment")
-            else:
-                new_type = current_road_type
-                new_name = current_road_name
+                # Split long steps exceeding 1000m
+                if s_dist > MAX_SEGMENT_LENGTH_METERS:
+                    chunk_coords = [s_coords[0]]
+                    chunk_dist = 0.0
+                    for k in range(len(s_coords) - 1):
+                        p1 = s_coords[k]
+                        p2 = s_coords[k + 1]
+                        d = haversine_distance_meters(p1[1], p1[0], p2[1], p2[0])
+                        if (chunk_dist + d) >= MAX_SEGMENT_LENGTH_METERS and len(chunk_coords) >= 2:
+                            raw_segments.append({
+                                "coords": chunk_coords,
+                                "distance_m": chunk_dist,
+                                "road_name": s_name,
+                                "road_type": s_type,
+                                "speed_kmh": s_speed,
+                                "step_ids": [s_id],
+                            })
+                            chunk_coords = [p1]
+                            chunk_dist = 0.0
+                        chunk_coords.append(p2)
+                        chunk_dist += d
+                    if len(chunk_coords) >= 2:
+                        raw_segments.append({
+                            "coords": chunk_coords,
+                            "distance_m": chunk_dist,
+                            "road_name": s_name,
+                            "road_type": s_type,
+                            "speed_kmh": s_speed,
+                            "step_ids": [s_id],
+                        })
+                else:
+                    raw_segments.append({
+                        "coords": s_coords,
+                        "distance_m": s_dist if s_dist > 0 else step_obj.get("distance_m", 0.0),
+                        "road_name": s_name,
+                        "road_type": s_type,
+                        "speed_kmh": s_speed,
+                        "step_ids": [s_id],
+                    })
+        else:
+            # Polyline distance-based partitioning with step cursor progression
+            current_segment_coords = [all_coords[0]]
+            current_distance = 0.0
+            step_cursor = 0
+            current_step = steps[0] if steps else {}
+            current_road_type = current_step.get("road_type", LOCAL)
+            current_road_name = current_step.get("road_name", "Road Segment")
+            current_speed = current_step.get("speed_kmh")
+            current_step_ids = [current_step.get("step_id", "step_000")]
 
-            # Check split conditions:
-            # Condition A: road_type transition
-            # Condition B: distance >= 1000m
-            is_road_transition = (new_type != current_road_type) and (current_distance >= MIN_SEGMENT_LENGTH_METERS)
-            is_distance_limit = (current_distance + dist_step) >= MAX_SEGMENT_LENGTH_METERS
+            step_cum_dist = 0.0
+            step_target_dist = current_step.get("distance_m", 999999.0)
 
-            if (is_road_transition or is_distance_limit) and len(current_segment_coords) >= 2:
-                # Seal current segment
+            for i in range(len(all_coords) - 1):
+                p1 = all_coords[i]
+                p2 = all_coords[i + 1]
+                dist_step = haversine_distance_meters(p1[1], p1[0], p2[1], p2[0])
+                step_cum_dist += dist_step
+
+                # Check if we passed current maneuver step boundary
+                if steps and step_cursor < len(steps) - 1 and step_cum_dist >= step_target_dist:
+                    step_cursor += 1
+                    current_step = steps[step_cursor]
+                    step_cum_dist = 0.0
+                    step_target_dist = current_step.get("distance_m", 999999.0)
+
+                new_type = current_step.get("road_type", LOCAL)
+                new_name = current_step.get("road_name", "Road Segment")
+                new_speed = current_step.get("speed_kmh")
+                new_id = current_step.get("step_id", "step_000")
+
+                is_road_transition = (new_type != current_road_type) and (current_distance >= MIN_SEGMENT_LENGTH_METERS)
+                is_distance_limit = (current_distance + dist_step) >= MAX_SEGMENT_LENGTH_METERS
+
+                if (is_road_transition or is_distance_limit) and len(current_segment_coords) >= 2:
+                    raw_segments.append({
+                        "coords": current_segment_coords,
+                        "distance_m": current_distance,
+                        "road_name": current_road_name,
+                        "road_type": current_road_type,
+                        "speed_kmh": current_speed,
+                        "step_ids": list(set(current_step_ids)),
+                    })
+                    current_segment_coords = [p1]
+                    current_distance = 0.0
+                    current_road_type = new_type
+                    current_road_name = new_name
+                    current_speed = new_speed
+                    current_step_ids = [new_id]
+
+                current_segment_coords.append(p2)
+                current_distance += dist_step
+                if new_id not in current_step_ids:
+                    current_step_ids.append(new_id)
+
+            if len(current_segment_coords) >= 2:
                 raw_segments.append({
                     "coords": current_segment_coords,
                     "distance_m": current_distance,
                     "road_name": current_road_name,
                     "road_type": current_road_type,
+                    "speed_kmh": current_speed,
                     "step_ids": list(set(current_step_ids)),
                 })
-                # Reset segment workspace starting with current point p1
-                current_segment_coords = [p1]
-                current_distance = 0.0
-                current_road_type = new_type
-                current_road_name = new_name
-                current_step_ids = [steps[step_cursor]["step_id"]] if (steps and step_cursor < len(steps)) else ["step_000"]
-
-            current_segment_coords.append(p2)
-            current_distance += dist_step
-
-        # Append final remainder segment
-        if len(current_segment_coords) >= 2:
-            raw_segments.append({
-                "coords": current_segment_coords,
-                "distance_m": current_distance,
-                "road_name": current_road_name,
-                "road_type": current_road_type,
-                "step_ids": list(set(current_step_ids)),
-            })
 
         # Post-Processing: Apply Minimum 200m Floor Rule & Remainder Merging
         final_segments: List[Dict[str, Any]] = []
 
         for seg in raw_segments:
-            # If remainder segment is under 200m and we have a preceding segment, merge it
             if seg["distance_m"] < MIN_SEGMENT_LENGTH_METERS and len(final_segments) > 0:
                 prev = final_segments[-1]
-                # Merge coordinates (avoid duplicating overlap point)
                 prev_coords = prev["coords"]
                 new_coords = seg["coords"]
                 if prev_coords[-1] == new_coords[0]:
@@ -182,6 +242,18 @@ class RouteSegmentationEngine:
             else:
                 final_segments.append(seg)
 
+        if not final_segments:
+            final_segments = raw_segments if raw_segments else [
+                {
+                    "coords": all_coords,
+                    "distance_m": actual_distance,
+                    "road_name": "Route Segment",
+                    "road_type": LOCAL,
+                    "speed_kmh": 25.0,
+                    "step_ids": ["step_000"],
+                }
+            ]
+
         # Build Output Format
         output: List[Dict[str, Any]] = []
         total_seg_dist = sum(s["distance_m"] for s in final_segments)
@@ -189,12 +261,14 @@ class RouteSegmentationEngine:
         for idx, seg in enumerate(final_segments):
             coords = seg["coords"]
             dist_m = seg["distance_m"]
-            
-            # Estimate segment duration proportionally to distance
             dur_s = (dist_m / total_seg_dist * total_duration_s) if total_seg_dist > 0 else 0.0
-
             centroid = calculate_coordinates_centroid(coords)
-            speed_kmh, speed_src = derive_segment_speed_and_source(seg["road_type"])
+
+            given_speed = seg.get("speed_kmh")
+            speed_kmh, speed_src = derive_segment_speed_and_source(
+                seg["road_type"],
+                osrm_speed_kmh=given_speed if (given_speed and given_speed > 0) else None
+            )
 
             output.append({
                 "segment_id": f"seg_{idx:03d}",

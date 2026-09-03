@@ -58,3 +58,5 @@ alembic.log
 postgres_data/
 backend/venv/
 backend/__pycache__/
+backend/logs/*.json
+

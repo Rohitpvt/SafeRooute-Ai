@@ -1,5 +1,5 @@
 {
-  "experiment_id": "EXP-1788318431",
+  "experiment_id": "EXP-1788330982",
   "dataset_mode": "PIPELINE_SYNTHETIC",
   "models_evaluated": [
     "Baseline_LogisticRegression",
@@ -60,5 +60,5 @@
   "raw_brier": 0.285,
   "calibrated_brier": 0.2441,
   "production_artifacts_untouched": true,
-  "duration_seconds": 0.53
+  "duration_seconds": 0.56
 }

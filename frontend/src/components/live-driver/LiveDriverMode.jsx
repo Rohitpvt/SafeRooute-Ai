@@ -8,7 +8,12 @@ import LiveTelemetry from "./LiveTelemetry";
 import LiveRiskCard from "./LiveRiskCard";
 import DrivingSafetyBanner from "./DrivingSafetyBanner";
 
+import { environmentService } from "../../services/environmentService";
+
 export default function LiveDriverMode({ onPredictionSuccess }) {
+  const [envWeather, setEnvWeather] = React.useState("Clear");
+  const [envQuality, setEnvQuality] = React.useState("VALID");
+
   const {
     status: gpsStatus,
     position,
@@ -20,6 +25,21 @@ export default function LiveDriverMode({ onPredictionSuccess }) {
   } = useGeolocation();
 
   const telemetry = useDriverTelemetry(position);
+
+  useEffect(() => {
+    if (position?.latitude && position?.longitude) {
+      environmentService
+        .getEnvironmentalContext(position.latitude, position.longitude)
+        .then((env) => {
+          if (env?.display_status) {
+            setEnvWeather(env.display_status);
+            setEnvQuality(env.quality || "VALID");
+          }
+        })
+        .catch(() => {});
+    }
+  }, [position?.latitude, position?.longitude]);
+
 
   const {
     setLiveDriverLocation,
@@ -149,10 +169,13 @@ export default function LiveDriverMode({ onPredictionSuccess }) {
             latitude={telemetry.latitude}
             longitude={telemetry.longitude}
             timeOfDay={telemetry.timeOfDay}
-            weather="Clear"
+            weather={envWeather}
+            weatherBadge={envQuality === "UNAVAILABLE" ? "Manual" : "Auto"}
             trafficDensity="Low"
+            trafficBadge="Manual"
             roadType="Arterial"
           />
+
 
           {/* Live Risk Evaluation Card */}
           <LiveRiskCard
