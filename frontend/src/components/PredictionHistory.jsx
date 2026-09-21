@@ -79,14 +79,14 @@ export default function PredictionHistory({ triggerRefresh, onSelectItem }) {
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-lg p-5 flex flex-col gap-4 text-white">
-      <h3 className="text-lg font-bold tracking-tight border-b border-slate-800 pb-3 flex items-center gap-2">
-        <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full"></span>
+    <div className="bg-[#0F0F0F] border border-white/10 rounded-3xl p-6 flex flex-col gap-4 text-white font-sans">
+      <h3 className="text-lg font-bold tracking-tight border-b border-white/10 pb-3 flex items-center gap-2 font-display">
+        <span className="w-2.5 h-2.5 bg-[#F97316] rounded-full"></span>
         Prediction Logs
       </h3>
 
       {/* Filter panel */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs font-sans">
         {/* Sort select */}
         <select
           value={sort}
@@ -94,7 +94,7 @@ export default function PredictionHistory({ triggerRefresh, onSelectItem }) {
             setSort(e.target.value);
             setSkip(0);
           }}
-          className="bg-slate-950 border border-slate-800 rounded px-2.5 py-1.5 focus:border-slate-700 outline-none text-slate-300"
+          className="bg-[#050505] border border-white/10 rounded-xl px-3 py-2 focus:border-[#F97316] outline-none text-slate-300"
         >
           <option value="desc">Newest First</option>
           <option value="asc">Oldest First</option>
@@ -107,7 +107,7 @@ export default function PredictionHistory({ triggerRefresh, onSelectItem }) {
             setWeather(e.target.value);
             setSkip(0);
           }}
-          className="bg-slate-950 border border-slate-800 rounded px-2.5 py-1.5 focus:border-slate-700 outline-none text-slate-300"
+          className="bg-[#050505] border border-white/10 rounded-xl px-3 py-2 focus:border-[#F97316] outline-none text-slate-300"
         >
           <option value="">All Weather</option>
           {weatherOptions.map((opt) => (
@@ -124,7 +124,7 @@ export default function PredictionHistory({ triggerRefresh, onSelectItem }) {
             setRiskCategory(e.target.value);
             setSkip(0);
           }}
-          className="bg-slate-950 border border-slate-800 rounded px-2.5 py-1.5 focus:border-slate-700 outline-none text-slate-300"
+          className="bg-[#050505] border border-white/10 rounded-xl px-3 py-2 focus:border-[#F97316] outline-none text-slate-300"
         >
           <option value="">All Risk levels</option>
           {riskOptions.map((opt) => (
@@ -141,7 +141,7 @@ export default function PredictionHistory({ triggerRefresh, onSelectItem }) {
             setRiskCategory("");
             setSkip(0);
           }}
-          className="bg-slate-950 border border-slate-800 rounded text-slate-400 hover:text-white transition"
+          className="bg-white/5 border border-white/10 rounded-xl text-slate-400 hover:text-white transition font-medium"
         >
           Reset Filters
         </button>
@@ -151,21 +151,21 @@ export default function PredictionHistory({ triggerRefresh, onSelectItem }) {
       {loading ? (
         <div className="flex flex-col gap-3 animate-pulse py-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-16 bg-slate-800/60 rounded border border-slate-800" />
+            <div key={i} className="h-16 bg-white/5 rounded-2xl border border-white/10" />
           ))}
         </div>
       ) : error ? (
-        <div className="flex flex-col items-center justify-center gap-3 py-6 bg-red-950/20 rounded border border-red-900/40 text-xs">
+        <div className="flex flex-col items-center justify-center gap-3 py-6 bg-red-950/20 rounded-2xl border border-red-500/30 text-xs">
           <span className="text-red-400 font-semibold">{error}</span>
           <button
             onClick={fetchHistory}
-            className="bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-300 px-4 py-1.5 rounded text-xs font-semibold transition"
+            className="bg-white/5 border border-white/10 hover:border-white/20 text-slate-300 px-4 py-1.5 rounded-full text-xs font-semibold transition"
           >
             Retry
           </button>
         </div>
       ) : records.length === 0 ? (
-        <div className="text-slate-500 text-xs text-center py-8 font-mono border border-dashed border-slate-800 rounded">
+        <div className="text-slate-500 text-xs text-center py-8 font-mono border border-dashed border-white/10 rounded-2xl">
           {weather || riskCategory ? "No records match search query." : "No prediction history yet."}
         </div>
       ) : (
@@ -179,16 +179,16 @@ export default function PredictionHistory({ triggerRefresh, onSelectItem }) {
                   selectPrediction(item);
                   if (onSelectItem) onSelectItem(item);
                 }}
-                className={`p-3.5 rounded-lg border transition cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-3 ${
+                className={`p-4 rounded-2xl border transition cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-3 ${
                   isSelected
-                    ? "bg-slate-800/90 border-indigo-500 shadow-md"
-                    : "bg-slate-950/60 border-slate-800/80 hover:border-slate-700 hover:bg-slate-800/40"
+                    ? "bg-white/10 border-[#F97316] shadow-md"
+                    : "bg-black/40 border-white/10 hover:border-white/20 hover:bg-white/5"
                 }`}
               >
                 {/* Left details */}
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2.5">
-                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded ${getRiskTagColor(item.risk_category)}`}>
+                    <span className={`text-[11px] font-bold font-mono px-2.5 py-0.5 rounded-full ${getRiskTagColor(item.risk_category)}`}>
                       {item.risk_category} ({item.risk_score}%)
                     </span>
                     <span className="text-xs font-bold text-slate-200">
@@ -220,7 +220,7 @@ export default function PredictionHistory({ triggerRefresh, onSelectItem }) {
 
       {/* Pagination controls */}
       {!loading && !error && records.length > 0 && (
-        <div className="flex items-center justify-between border-t border-slate-800 pt-3 text-xs font-mono text-slate-400">
+        <div className="flex items-center justify-between border-t border-white/10 pt-3 text-xs font-mono text-slate-400">
           <span>
             Showing records {skip + 1} - {skip + records.length}
           </span>
@@ -228,14 +228,14 @@ export default function PredictionHistory({ triggerRefresh, onSelectItem }) {
             <button
               onClick={handlePrevPage}
               disabled={skip === 0}
-              className="px-3 py-1 bg-slate-950 border border-slate-800 rounded disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800 transition"
+              className="px-4 py-1.5 bg-white/5 border border-white/10 rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white/10 transition"
             >
               Previous
             </button>
             <button
               onClick={handleNextPage}
               disabled={records.length < limit}
-              className="px-3 py-1 bg-slate-950 border border-slate-800 rounded disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800 transition"
+              className="px-4 py-1.5 bg-white/5 border border-white/10 rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white/10 transition"
             >
               Next
             </button>

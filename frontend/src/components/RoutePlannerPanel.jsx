@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRoute, ROUTE_STATUS, SELECTION_MODE } from "../context/RouteContext";
 import { useGeolocation } from "../hooks/useGeolocation";
 import { geocodePlaceName } from "../services/geocodingService";
+import { environmentService } from "../services/environmentService";
 
 export default function RoutePlannerPanel() {
   const {
@@ -27,10 +28,12 @@ export default function RoutePlannerPanel() {
   const [isSearchingDest, setIsSearchingDest] = useState(false);
   const [isSearchingOrigin, setIsSearchingOrigin] = useState(false);
 
-  // Environmental Scenario State
-  const [weather, setWeather] = useState("Rainy");
-  const [trafficDensity, setTrafficDensity] = useState("High");
-  const [timeOfDay, setTimeOfDay] = useState("Evening");
+  // Environmental Scenario State with Automatic Fetching
+  const [weather, setWeather] = useState("Clear");
+  const [trafficDensity, setTrafficDensity] = useState("Medium");
+  const [timeOfDay, setTimeOfDay] = useState("Afternoon");
+  const [isFetchingEnv, setIsFetchingEnv] = useState(false);
+  const [envBadge, setEnvBadge] = useState("Auto");
 
   // Candidate Selection List state
   const [candidates, setCandidates] = useState([]);
@@ -43,6 +46,72 @@ export default function RoutePlannerPanel() {
     { label: "Cyber City (Gurugram)", lat: 28.4950, lng: 77.0890 },
     { label: "Noida Sector 18", lat: 28.5700, lng: 77.3200 },
   ];
+
+  // Helper: derive automatic time of day based on current local hour
+  const getAutoTimeOfDay = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return "Morning";
+    if (hour >= 12 && hour < 17) return "Afternoon";
+    if (hour >= 17 && hour < 22) return "Evening";
+    return "Night";
+  };
+
+  // Helper: derive traffic density from rush hour and weather
+  const getAutoTrafficDensity = (weatherStr) => {
+    const hour = new Date().getHours();
+    const isRushHour = (hour >= 8 && hour <= 10) || (hour >= 17 && hour <= 20);
+    if (isRushHour) {
+      return weatherStr === "Rainy" || weatherStr === "Foggy" ? "Jammed" : "High";
+    }
+    if (hour >= 11 && hour <= 16) return "Medium";
+    return "Low";
+  };
+
+  // Helper: map backend/API weather_state canonical string to UI option
+  const mapWeatherStateToUI = (weatherState) => {
+    if (!weatherState) return "Clear";
+    const s = String(weatherState).toUpperCase();
+    if (s.includes("RAIN") || s.includes("STORM")) return "Rainy";
+    if (s.includes("FOG") || s.includes("VISIBILITY")) return "Foggy";
+    if (s.includes("SNOW")) return "Snowy";
+    if (s.includes("WIND")) return "Windy";
+    return "Clear";
+  };
+
+  // Automatic Environmental Fetcher based on coordinates
+  const fetchLiveEnvironmentalContext = useCallback(async (lat, lng) => {
+    setIsFetchingEnv(true);
+    const timeVal = getAutoTimeOfDay();
+    setTimeOfDay(timeVal);
+
+    try {
+      const targetLat = lat || 28.6139;
+      const targetLng = lng || 77.2090;
+
+      const env = await environmentService.getEnvironmentalContext(targetLat, targetLng);
+      const mappedWeather = mapWeatherStateToUI(env?.weather_state);
+      setWeather(mappedWeather);
+
+      const trafficVal = getAutoTrafficDensity(mappedWeather);
+      setTrafficDensity(trafficVal);
+
+      setEnvBadge(env?.quality === "VALID" || env?.quality === "RECENT" ? "Live Auto" : "Auto");
+    } catch (err) {
+      console.warn("Auto-fetching environmental conditions failed:", err);
+      setWeather("Clear");
+      setTrafficDensity(getAutoTrafficDensity("Clear"));
+      setEnvBadge("Auto Fallback");
+    } finally {
+      setIsFetchingEnv(false);
+    }
+  }, []);
+
+  // Trigger automatic environmental data fetch whenever origin coordinates change or on mount
+  useEffect(() => {
+    const targetLat = origin?.latitude || 28.6139;
+    const targetLng = origin?.longitude || 77.2090;
+    fetchLiveEnvironmentalContext(targetLat, targetLng);
+  }, [origin?.latitude, origin?.longitude, fetchLiveEnvironmentalContext]);
 
   // Sync inputs when origin or destination context objects update
   useEffect(() => {
@@ -251,21 +320,21 @@ export default function RoutePlannerPanel() {
   };
 
   return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-2xl backdrop-blur-md text-slate-100 font-sans space-y-4">
+    <div className="bg-[#0F0F0F] border border-white/10 rounded-3xl p-5 shadow-2xl backdrop-blur-xl text-slate-100 font-sans space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+      <div className="flex items-center justify-between border-b border-white/10 pb-3">
         <div className="flex items-center space-x-2.5">
-          <div className="p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-400">
+          <div className="p-2 bg-[#F97316]/10 border border-[#F97316]/30 rounded-2xl text-[#F97316]">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
             </svg>
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-slate-100 text-base tracking-wide">Route Risk Intelligence</h3>
-              <span className="text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-1.5 py-0.5 rounded font-mono">AI-Assisted</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="font-bold text-slate-100 text-sm sm:text-base tracking-wide font-display whitespace-nowrap">Route Risk Intelligence</h3>
+              <span className="text-[10px] bg-[#F97316]/20 text-[#FB923C] border border-[#F97316]/30 px-2 py-0.5 rounded-full font-mono font-medium whitespace-nowrap shrink-0 inline-block">AI-Assisted</span>
             </div>
-            <p className="text-xs text-slate-400">Calculate dynamic segment risk along path</p>
+            <p className="text-xs text-slate-400 font-sans">Calculate dynamic segment risk along path</p>
           </div>
         </div>
         {routeStatus !== ROUTE_STATUS.IDLE && (
@@ -276,7 +345,7 @@ export default function RoutePlannerPanel() {
               setDestInputText("");
               setCandidates([]);
             }}
-            className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-200 transition-colors"
+            className="p-2 hover:bg-white/5 rounded-full text-slate-400 hover:text-slate-200 transition-colors border border-transparent hover:border-white/10"
             title="Reset Route"
             disabled={isCalculating}
           >
@@ -289,7 +358,7 @@ export default function RoutePlannerPanel() {
 
       {/* Origin Input Section */}
       <div className="space-y-2">
-        <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center justify-between">
+        <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center justify-between font-sans">
           <span className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block" /> Origin Location
           </span>
@@ -305,13 +374,13 @@ export default function RoutePlannerPanel() {
             onChange={handleOriginTextChange}
             onKeyDown={(e) => e.key === "Enter" && handleOriginSearch()}
             placeholder="Type place name or coords... (Press Enter / Search)"
-            className="w-full bg-slate-950/80 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 placeholder:text-slate-600"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-[#F97316] placeholder:text-slate-600 transition-colors font-mono"
           />
           <button
             type="button"
             onClick={() => handleOriginSearch()}
             disabled={isSearchingOrigin}
-            className="p-2 bg-emerald-700/80 hover:bg-emerald-600 text-white rounded-lg transition-colors border border-emerald-600/80"
+            className="p-2 bg-[#F97316] hover:bg-[#FB923C] text-white rounded-xl transition-colors border border-[#F97316]"
             title="Search Origin Location"
           >
             <svg className={`w-4 h-4 ${isSearchingOrigin ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -322,7 +391,7 @@ export default function RoutePlannerPanel() {
             type="button"
             onClick={handleUseCurrentLocation}
             disabled={isAcquiring || isAcquiringLocation || isCalculating}
-            className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors border border-slate-700 disabled:opacity-50"
+            className="p-2 bg-white/5 hover:bg-white/10 text-slate-200 rounded-xl transition-colors border border-white/10 disabled:opacity-50"
             title="Use Current Location"
           >
             <svg className={`w-4 h-4 text-emerald-400 ${isAcquiring ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -333,10 +402,10 @@ export default function RoutePlannerPanel() {
           <button
             type="button"
             onClick={() => setSelectionMode(selectionMode === SELECTION_MODE.ORIGIN ? SELECTION_MODE.NONE : SELECTION_MODE.ORIGIN)}
-            className={`p-2 rounded-lg transition-colors border ${
+            className={`p-2 rounded-xl transition-colors border ${
               selectionMode === SELECTION_MODE.ORIGIN
                 ? "bg-amber-500/20 border-amber-500 text-amber-400"
-                : "bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200"
+                : "bg-white/5 hover:bg-white/10 border-white/10 text-slate-200"
             }`}
             title="Click on Map to Pick Origin"
           >
@@ -350,7 +419,7 @@ export default function RoutePlannerPanel() {
 
       {/* Destination Input Section */}
       <div className="space-y-2">
-        <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center justify-between">
+        <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center justify-between font-sans">
           <span className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-red-400 inline-block" /> Destination Location
           </span>
@@ -366,13 +435,13 @@ export default function RoutePlannerPanel() {
             onChange={handleDestTextChange}
             onKeyDown={(e) => e.key === "Enter" && handleDestSearch()}
             placeholder="Type place name or coords... (Press Enter / Search)"
-            className="w-full bg-slate-950/80 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-red-500 placeholder:text-slate-600"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-[#F97316] placeholder:text-slate-600 transition-colors font-mono"
           />
           <button
             type="button"
             onClick={() => handleDestSearch()}
             disabled={isSearchingDest}
-            className="p-2 bg-red-800/80 hover:bg-red-700 text-white rounded-lg transition-colors border border-red-700/80"
+            className="p-2 bg-red-500 hover:bg-red-400 text-white rounded-xl transition-colors border border-red-500"
             title="Search Destination Location"
           >
             <svg className={`w-4 h-4 ${isSearchingDest ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -382,10 +451,10 @@ export default function RoutePlannerPanel() {
           <button
             type="button"
             onClick={() => setSelectionMode(selectionMode === SELECTION_MODE.DESTINATION ? SELECTION_MODE.NONE : SELECTION_MODE.DESTINATION)}
-            className={`p-2 rounded-lg transition-colors border ${
+            className={`p-2 rounded-xl transition-colors border ${
               selectionMode === SELECTION_MODE.DESTINATION
                 ? "bg-amber-500/20 border-amber-500 text-amber-400"
-                : "bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200"
+                : "bg-white/5 hover:bg-white/10 border-white/10 text-slate-200"
             }`}
             title="Click on Map to Pick Destination"
           >
@@ -398,17 +467,37 @@ export default function RoutePlannerPanel() {
       </div>
 
       {/* Environmental Scenario Parameters */}
-      <div className="bg-slate-950/70 border border-slate-800 rounded-lg p-3 space-y-2 text-xs">
-        <p className="text-[11px] font-semibold text-slate-300 flex items-center gap-1.5 uppercase tracking-wider">
-          <span className="w-2 h-2 rounded-full bg-indigo-400 inline-block" /> Environmental Risk Conditions
-        </p>
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-3 space-y-2 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-[10px] sm:text-[11px] font-semibold text-slate-300 flex items-center gap-1.5 uppercase tracking-wider font-sans whitespace-nowrap shrink-0">
+            <span className="w-2 h-2 rounded-full bg-[#F97316] shrink-0 inline-block" /> Environmental Risk Conditions
+          </p>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-[#F97316]/20 text-[#FB923C] border border-[#F97316]/30 inline-flex items-center gap-1 font-medium whitespace-nowrap shrink-0">
+              {isFetchingEnv && <span className="w-1.5 h-1.5 bg-[#F97316] rounded-full animate-ping shrink-0" />}
+              {isFetchingEnv ? "Fetching..." : envBadge}
+            </span>
+            <button
+              type="button"
+              onClick={() => fetchLiveEnvironmentalContext(origin?.latitude, origin?.longitude)}
+              disabled={isFetchingEnv}
+              title="Refresh Live Data"
+              className="p-1 hover:bg-white/10 rounded-full text-slate-400 hover:text-white transition-colors shrink-0"
+            >
+              <svg className={`w-3.5 h-3.5 ${isFetchingEnv ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
         <div className="grid grid-cols-3 gap-2">
           <div>
             <label className="text-[10px] text-slate-400 block mb-1 font-medium">Weather</label>
             <select
               value={weather}
               onChange={(e) => setWeather(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1 text-slate-200 text-xs focus:outline-none focus:border-indigo-500"
+              className="w-full bg-[#050505] border border-white/10 rounded-lg px-2 py-1 text-slate-200 text-xs focus:outline-none focus:border-[#F97316]"
             >
               <option value="Clear">Clear</option>
               <option value="Rainy">Rainy</option>
@@ -422,7 +511,7 @@ export default function RoutePlannerPanel() {
             <select
               value={trafficDensity}
               onChange={(e) => setTrafficDensity(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1 text-slate-200 text-xs focus:outline-none focus:border-indigo-500"
+              className="w-full bg-[#050505] border border-white/10 rounded-lg px-2 py-1 text-slate-200 text-xs focus:outline-none focus:border-[#F97316]"
             >
               <option value="Low">Low</option>
               <option value="Medium">Medium</option>
@@ -435,7 +524,7 @@ export default function RoutePlannerPanel() {
             <select
               value={timeOfDay}
               onChange={(e) => setTimeOfDay(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1 text-slate-200 text-xs focus:outline-none focus:border-indigo-500"
+              className="w-full bg-[#050505] border border-white/10 rounded-lg px-2 py-1 text-slate-200 text-xs focus:outline-none focus:border-[#F97316]"
             >
               <option value="Morning">Morning</option>
               <option value="Afternoon">Afternoon</option>
@@ -448,7 +537,7 @@ export default function RoutePlannerPanel() {
 
       {/* Multiple Candidate Selection List */}
       {candidates.length > 0 && (
-        <div className="p-3 bg-amber-950/40 border border-amber-800/80 rounded-lg text-xs space-y-2">
+        <div className="p-3 bg-amber-950/40 border border-amber-500/30 rounded-2xl text-xs space-y-2">
           <p className="font-semibold text-amber-300">Select a Location:</p>
           <div className="space-y-1.5">
             {candidates.map((cand, idx) => (
@@ -456,10 +545,10 @@ export default function RoutePlannerPanel() {
                 key={idx}
                 type="button"
                 onClick={() => selectCandidate(cand)}
-                className="w-full text-left p-2 bg-slate-900 hover:bg-slate-800 border border-slate-700/60 rounded text-slate-200 hover:text-white transition flex items-center justify-between gap-2"
+                className="w-full text-left p-2 bg-black/40 hover:bg-black/60 border border-white/10 rounded-xl text-slate-200 hover:text-white transition flex items-center justify-between gap-2 font-mono"
               >
                 <span>{cand.location_name}</span>
-                <span className="text-[10px] text-amber-400 uppercase font-mono">{cand.source}</span>
+                <span className="text-[10px] text-amber-400 uppercase">{cand.source}</span>
               </button>
             ))}
           </div>
@@ -468,7 +557,7 @@ export default function RoutePlannerPanel() {
 
       {/* Preset Quick Selectors */}
       <div className="space-y-1.5">
-        <p className="text-[11px] text-slate-400 font-medium">Quick Presets (Delhi NCR):</p>
+        <p className="text-[11px] text-slate-400 font-medium font-sans">Quick Presets (Delhi NCR):</p>
         <div className="flex flex-wrap gap-1.5">
           {DELHI_PRESETS.map((preset) => (
             <button
@@ -479,7 +568,7 @@ export default function RoutePlannerPanel() {
                 if (!origin) setOrigin(item);
                 else setDestination(item);
               }}
-              className="text-[11px] bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white px-2 py-1 rounded border border-slate-700/60 transition-colors"
+              className="text-[11px] bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white px-3 py-1.5 rounded-full border border-white/10 transition-colors font-medium"
             >
               {preset.label}
             </button>
@@ -492,7 +581,7 @@ export default function RoutePlannerPanel() {
 
       {/* Error Alert */}
       {routeError && (
-        <div className="p-3 bg-red-950/60 border border-red-800/80 rounded-lg text-xs text-red-300 flex items-start gap-2">
+        <div className="p-3 bg-red-950/60 border border-red-500/40 rounded-2xl text-xs text-red-300 flex items-start gap-2">
           <svg className="w-4 h-4 text-red-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
@@ -508,7 +597,7 @@ export default function RoutePlannerPanel() {
         type="button"
         onClick={handleCalculateRouteClick}
         disabled={!origin || !destination || isCalculating}
-        className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-500 text-white text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/50"
+        className="w-full py-3 px-4 bg-[#F97316] hover:bg-[#FB923C] disabled:bg-white/5 disabled:text-slate-600 text-white text-xs font-bold rounded-full transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#F97316]/20 font-display uppercase tracking-wider"
       >
         {isCalculating ? (
           <>

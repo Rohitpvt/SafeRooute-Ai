@@ -4,12 +4,64 @@
 
 @layer base {
   body {
-    @apply bg-primary-dark text-gray-100 font-sans antialiased;
+    @apply bg-asterix-bg text-white font-sans antialiased selection:bg-asterix-primary selection:text-black;
     margin: 0;
+    background-color: #050505;
   }
+}
+
+/* Custom Asterix Backglow & Glassmorphism Utilities */
+.asterix-glow-orange {
+  position: relative;
+}
+.asterix-glow-orange::before {
+  content: "";
+  position: absolute;
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.18) 0%, rgba(249, 115, 22, 0) 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.asterix-glass-panel {
+  background: rgba(15, 15, 15, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.asterix-card {
+  background-color: #0F0F0F;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1.5rem;
+  transition: border-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.asterix-card:hover {
+  border-color: rgba(249, 115, 22, 0.3);
+}
+
+/* Custom dark scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #050505;
+}
+::-webkit-scrollbar-thumb {
+  background: #222222;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #F97316;
 }
 
 /* High-contrast dark tactical filter for OpenStreetMap keyless basemap tiles */
 .dark-tile-filter {
-  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
+  filter: brightness(0.65) invert(1) contrast(2.8) hue-rotate(200deg) saturate(0.35);
 }

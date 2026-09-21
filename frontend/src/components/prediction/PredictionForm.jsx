@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import ModeSwitcher from "./ModeSwitcher";
 import LiveDriverMode from "../live-driver/LiveDriverMode";
 import RoutePlannerPanel from "../RoutePlannerPanel";
 import apiClient from "../../services/api";
+import { environmentService } from "../../services/environmentService";
 
 export default function PredictionForm({ onPredictionSuccess }) {
   const [activeMode, setActiveMode] = useState("route"); // "route" | "live" | "manual"
@@ -21,11 +22,66 @@ export default function PredictionForm({ onPredictionSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successData, setSuccessData] = useState(null);
+  const [isFetchingEnv, setIsFetchingEnv] = useState(false);
 
   const weatherOptions = ["Clear", "Rainy", "Snowy", "Foggy", "Windy"];
   const trafficOptions = ["Low", "Medium", "High", "Jammed"];
   const roadOptions = ["Highway", "Arterial", "Local", "Expressway"];
   const timeOptions = ["Morning", "Afternoon", "Evening", "Night"];
+
+  const getAutoTimeOfDay = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return "Morning";
+    if (hour >= 12 && hour < 17) return "Afternoon";
+    if (hour >= 17 && hour < 22) return "Evening";
+    return "Night";
+  };
+
+  const getAutoTrafficDensity = (weatherStr) => {
+    const hour = new Date().getHours();
+    const isRushHour = (hour >= 8 && hour <= 10) || (hour >= 17 && hour <= 20);
+    if (isRushHour) {
+      return weatherStr === "Rainy" || weatherStr === "Foggy" ? "Jammed" : "High";
+    }
+    if (hour >= 11 && hour <= 16) return "Medium";
+    return "Low";
+  };
+
+  const mapWeatherStateToUI = (weatherState) => {
+    if (!weatherState) return "Clear";
+    const s = String(weatherState).toUpperCase();
+    if (s.includes("RAIN") || s.includes("STORM")) return "Rainy";
+    if (s.includes("FOG") || s.includes("VISIBILITY")) return "Foggy";
+    if (s.includes("SNOW")) return "Snowy";
+    if (s.includes("WIND")) return "Windy";
+    return "Clear";
+  };
+
+  const fetchLiveEnvForForm = useCallback(async (lat, lng) => {
+    setIsFetchingEnv(true);
+    const timeVal = getAutoTimeOfDay();
+    try {
+      const env = await environmentService.getEnvironmentalContext(lat, lng);
+      const mappedWeather = mapWeatherStateToUI(env?.weather_state);
+      const trafficVal = getAutoTrafficDensity(mappedWeather);
+      setFormData((prev) => ({
+        ...prev,
+        weather: mappedWeather,
+        traffic_density: trafficVal,
+        time_of_day: timeVal,
+      }));
+    } catch (err) {
+      console.warn("Form live environmental fetch failed:", err);
+    } finally {
+      setIsFetchingEnv(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (formData.latitude && formData.longitude) {
+      fetchLiveEnvForForm(formData.latitude, formData.longitude);
+    }
+  }, [formData.latitude, formData.longitude, fetchLiveEnvForForm]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -39,12 +95,15 @@ export default function PredictionForm({ onPredictionSuccess }) {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          const lat = parseFloat(position.coords.latitude.toFixed(6));
+          const lng = parseFloat(position.coords.longitude.toFixed(6));
           setFormData((prev) => ({
             ...prev,
-            latitude: parseFloat(position.coords.latitude.toFixed(6)),
-            longitude: parseFloat(position.coords.longitude.toFixed(6)),
+            latitude: lat,
+            longitude: lng,
             location_name: prev.location_name || "Current GPS Location",
           }));
+          fetchLiveEnvForForm(lat, lng);
         },
         (err) => {
           console.warn("Geolocation permission blocked or failed:", err);

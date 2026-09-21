@@ -5,7 +5,17 @@ const MapContext = createContext(null);
 
 export const useMap = () => {
   const context = useContext(MapContext);
-  if (!context) throw new Error("useMap must be used within a MapProvider");
+  if (!context) {
+    // Return fallback context if used outside MapProvider (e.g. in standalone Navbar)
+    return {
+      customApiKey: localStorage.getItem("saferoute_google_maps_key") || "",
+      saveCustomApiKey: (key) => {
+        if (key) localStorage.setItem("saferoute_google_maps_key", key);
+        else localStorage.removeItem("saferoute_google_maps_key");
+      },
+      isOffline: !navigator.onLine,
+    };
+  }
   return context;
 };
 

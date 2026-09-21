@@ -43,10 +43,10 @@ export default function GPSStatus({ status, accuracyLabel, accuracy }) {
   const badge = getBadgeStyle();
 
   return (
-    <div className="flex items-center justify-between bg-slate-950/60 border border-slate-800/80 rounded-lg p-3 text-xs">
+    <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-2xl p-3.5 text-xs font-sans">
       <div className="flex items-center gap-2.5">
         <span className="text-slate-400 font-medium">GPS Status:</span>
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-semibold ${badge.bg}`}>
+        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-semibold font-mono ${badge.bg}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${badge.dot}`}></span>
           {badge.text}
         </span>
@@ -61,3 +61,4 @@ export default function GPSStatus({ status, accuracyLabel, accuracy }) {
     </div>
   );
 }
+

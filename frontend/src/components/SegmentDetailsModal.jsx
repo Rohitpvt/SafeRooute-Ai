@@ -30,12 +30,12 @@ export default function SegmentDetailsModal() {
   const durationMins = Math.round(duration_s / 60) || 1;
 
   return (
-    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-xl p-5 shadow-2xl space-y-4 font-sans text-slate-100 relative">
+    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+      <div className="bg-[#0F0F0F] border border-white/10 w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4 font-sans text-slate-100 relative">
         {/* Close Button */}
         <button
           onClick={() => selectSegment(null)}
-          className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+          className="absolute top-5 right-5 p-2 rounded-full hover:bg-white/10 text-slate-400 hover:text-white transition-colors border border-transparent hover:border-white/10"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -45,61 +45,61 @@ export default function SegmentDetailsModal() {
         {/* Header */}
         <div className="space-y-1 pr-8">
           <div className="flex items-center gap-2">
-            <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold border ${badgeClass}`}>
+            <span className={`text-xs px-3 py-1 rounded-full font-bold font-mono border ${badgeClass}`}>
               {risk_category ? risk_category.toUpperCase() : "UNAVAILABLE"}
             </span>
             <span className="text-xs text-slate-400 font-mono">ID: {segment_id}</span>
           </div>
-          <h3 className="text-lg font-bold text-slate-100 tracking-tight">{road_name || "Road Segment"}</h3>
-          <p className="text-xs text-slate-400 flex items-center gap-2">
+          <h3 className="text-xl font-bold text-slate-100 tracking-tight font-display">{road_name || "Road Segment"}</h3>
+          <p className="text-xs text-slate-400 flex items-center gap-2 font-sans">
             <span>Type: <strong className="text-slate-200">{road_type}</strong></span>
             <span>•</span>
-            <span>{distanceKm} km ({durationMins} mins)</span>
+            <span className="font-mono">{distanceKm} km ({durationMins} mins)</span>
           </p>
         </div>
 
         {/* Risk Score Highlight */}
-        <div className="bg-slate-950/80 border border-slate-800/80 p-3.5 rounded-xl flex items-center justify-between">
+        <div className="bg-white/5 border border-white/10 p-4 rounded-2xl flex items-center justify-between font-sans">
           <div>
-            <p className="text-xs text-slate-400">Accident Risk Score</p>
-            <p className="text-2xl font-extrabold" style={{ color: color }}>
+            <p className="text-xs text-slate-400 font-medium">Accident Risk Score</p>
+            <p className="text-3xl font-bold font-mono" style={{ color: color }}>
               {risk_score !== null && risk_score !== undefined ? `${risk_score}/100` : "N/A"}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-slate-400">Model Confidence</p>
-            <p className="text-sm font-semibold text-slate-200">
+            <p className="text-xs text-slate-400 font-medium">Model Confidence</p>
+            <p className="text-sm font-bold font-mono text-slate-200">
               {confidence_score !== null && confidence_score !== undefined ? `${(confidence_score * 100).toFixed(1)}%` : "N/A"}
             </p>
           </div>
         </div>
 
         {/* Features Grid */}
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="bg-slate-950/60 border border-slate-800 p-2.5 rounded-lg space-y-0.5">
-            <div className="flex items-center text-slate-400 gap-1.5">
+        <div className="grid grid-cols-2 gap-2.5 text-xs font-sans">
+          <div className="bg-white/5 border border-white/10 p-3 rounded-2xl space-y-0.5">
+            <div className="flex items-center text-slate-400 gap-1.5 font-medium">
               <span className="w-2 h-2 rounded-full bg-cyan-400 inline-block" /> Weather Condition
             </div>
             <p className="font-semibold text-slate-200">{weather || "Clear"} (Manual Context)</p>
           </div>
 
-          <div className="bg-slate-950/60 border border-slate-800 p-2.5 rounded-lg space-y-0.5">
-            <div className="flex items-center text-slate-400 gap-1.5">
+          <div className="bg-white/5 border border-white/10 p-3 rounded-2xl space-y-0.5">
+            <div className="flex items-center text-slate-400 gap-1.5 font-medium">
               <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" /> Traffic Density
             </div>
             <p className="font-semibold text-slate-200">{traffic_density || "Low"} (Manual Context)</p>
           </div>
 
-          <div className="bg-slate-950/60 border border-slate-800 p-2.5 rounded-lg space-y-0.5">
-            <div className="flex items-center text-slate-400 gap-1.5">
+          <div className="bg-white/5 border border-white/10 p-3 rounded-2xl space-y-0.5">
+            <div className="flex items-center text-slate-400 gap-1.5 font-medium">
               <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" /> Average Speed
             </div>
-            <p className="font-semibold text-slate-200">{speed_kmh || 45} km/h</p>
+            <p className="font-semibold text-slate-200 font-mono">{speed_kmh || 45} km/h</p>
             <p className="text-[10px] text-slate-500">Source: {speed_source || "Static Profile"}</p>
           </div>
 
-          <div className="bg-slate-950/60 border border-slate-800 p-2.5 rounded-lg space-y-0.5">
-            <div className="flex items-center text-slate-400 gap-1.5">
+          <div className="bg-white/5 border border-white/10 p-3 rounded-2xl space-y-0.5">
+            <div className="flex items-center text-slate-400 gap-1.5 font-medium">
               <span className="w-2 h-2 rounded-full bg-indigo-400 inline-block" /> Time Block
             </div>
             <p className="font-semibold text-slate-200">{time_of_day || "Afternoon"}</p>
@@ -107,7 +107,7 @@ export default function SegmentDetailsModal() {
         </div>
 
         {/* Audit Metadata Footer */}
-        <div className="border-t border-slate-800 pt-3 text-[11px] text-slate-400 space-y-1">
+        <div className="border-t border-white/10 pt-3 text-[11px] text-slate-400 space-y-1 font-sans">
           <div className="flex justify-between items-center">
             <span>Model Version:</span>
             <span className="font-mono text-slate-300">{model_version || "1.22.0"}</span>

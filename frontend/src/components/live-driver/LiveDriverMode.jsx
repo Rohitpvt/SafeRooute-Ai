@@ -96,15 +96,18 @@ export default function LiveDriverMode({ onPredictionSuccess }) {
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-lg p-5 flex flex-col gap-4 text-white shadow-xl">
+    <div className="bg-[#0F0F0F] border border-white/10 rounded-3xl p-6 flex flex-col gap-5 text-white shadow-2xl relative overflow-hidden">
+      {/* Background Subtle Backglow */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-radial from-orange-500/10 to-transparent pointer-events-none blur-2xl" />
+
       {/* Header */}
-      <div className="border-b border-slate-800 pb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="border-b border-white/10 pb-4 flex items-center justify-between z-10">
+        <div className="flex items-center gap-2.5">
           <span className="relative flex h-3 w-3">
-            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isTracking ? "bg-cyan-400" : "bg-slate-500"}`}></span>
-            <span className={`relative inline-flex rounded-full h-3 w-3 ${isTracking ? "bg-cyan-500" : "bg-slate-600"}`}></span>
+            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isTracking ? "bg-[#F97316]" : "bg-slate-500"}`}></span>
+            <span className={`relative inline-flex rounded-full h-3 w-3 ${isTracking ? "bg-[#F97316]" : "bg-slate-600"}`}></span>
           </span>
-          <h3 className="text-base font-bold tracking-tight">Live Driver Telemetry Mode</h3>
+          <h3 className="text-base font-bold font-display tracking-tight text-white">Live Driver Telemetry Mode</h3>
         </div>
 
         {isTracking && (
@@ -113,7 +116,7 @@ export default function LiveDriverMode({ onPredictionSuccess }) {
               type="checkbox"
               checked={followDriver}
               onChange={(e) => setFollowDriver(e.target.checked)}
-              className="w-3.5 h-3.5 bg-slate-950 border border-slate-800 rounded text-indigo-600 focus:ring-0 cursor-pointer"
+              className="w-3.5 h-3.5 bg-black border border-white/20 rounded accent-[#F97316] cursor-pointer"
             />
             Follow Map
           </label>
@@ -125,14 +128,14 @@ export default function LiveDriverMode({ onPredictionSuccess }) {
 
       {/* Main Mode View */}
       {!isTracking ? (
-        <div className="bg-slate-950/60 border border-slate-800/80 rounded-lg p-6 flex flex-col items-center justify-center text-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-cyan-950 border border-cyan-800/60 flex items-center justify-center text-cyan-400 text-xl font-mono shadow-lg shadow-cyan-950/50">
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-4 z-10">
+          <div className="w-14 h-14 rounded-full bg-orange-950/60 border border-orange-500/30 flex items-center justify-center text-[#F97316] text-2xl font-mono shadow-[0_0_20px_rgba(249,115,22,0.3)]">
             📡
           </div>
 
           <div className="flex flex-col gap-1 max-w-sm">
-            <h4 className="text-sm font-bold text-slate-200">Start Real-Time Driving Monitor</h4>
-            <p className="text-xs text-slate-400">
+            <h4 className="text-base font-bold font-display text-white">Start Real-Time Driving Monitor</h4>
+            <p className="text-xs text-slate-400 font-sans leading-relaxed">
               Continuously streams GPS telemetry, speed, and automatically calculates road segment risk hands-free while driving.
             </p>
           </div>
@@ -140,13 +143,13 @@ export default function LiveDriverMode({ onPredictionSuccess }) {
           <button
             type="button"
             onClick={handleStart}
-            className="w-full mt-2 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white rounded-lg py-3 text-sm font-bold tracking-wide transition shadow-lg shadow-cyan-600/25 flex items-center justify-center gap-2"
+            className="w-full mt-2 bg-[#F97316] hover:bg-[#FB923C] text-black font-semibold rounded-full py-3.5 text-sm tracking-wide transition shadow-[0_0_25px_rgba(249,115,22,0.4)] flex items-center justify-center gap-2 active:scale-95"
           >
             <span>▶</span> Start Live Driver Mode
           </button>
         </div>
       ) : (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 z-10">
           {/* GPS Status */}
           <GPSStatus
             status={gpsStatus}
@@ -156,7 +159,7 @@ export default function LiveDriverMode({ onPredictionSuccess }) {
 
           {/* GPS Error Message */}
           {gpsError && (
-            <div className="bg-red-950/40 border border-red-900/60 text-red-400 text-xs p-3 rounded-lg flex flex-col gap-1">
+            <div className="bg-red-950/40 border border-red-900/60 text-red-400 text-xs p-3 rounded-2xl flex flex-col gap-1">
               <span className="font-semibold">GPS Warning</span>
               <span>{gpsError}</span>
             </div>
@@ -176,7 +179,6 @@ export default function LiveDriverMode({ onPredictionSuccess }) {
             roadType="Arterial"
           />
 
-
           {/* Live Risk Evaluation Card */}
           <LiveRiskCard
             riskData={riskData}
@@ -186,7 +188,7 @@ export default function LiveDriverMode({ onPredictionSuccess }) {
           />
 
           {riskError && (
-            <div className="bg-red-950/40 border border-red-900/60 text-red-400 text-xs p-2.5 rounded">
+            <div className="bg-red-950/40 border border-red-900/60 text-red-400 text-xs p-3 rounded-2xl">
               {riskError}
             </div>
           )}
@@ -195,7 +197,7 @@ export default function LiveDriverMode({ onPredictionSuccess }) {
           <button
             type="button"
             onClick={handleStop}
-            className="w-full bg-slate-950 border border-red-900/50 hover:bg-red-950/40 text-red-400 hover:text-red-300 rounded-lg py-2.5 text-xs font-bold tracking-wider transition uppercase"
+            className="w-full bg-white/5 border border-red-500/30 hover:bg-red-950/40 text-red-400 hover:text-red-300 rounded-full py-3 text-xs font-bold tracking-wider transition uppercase"
           >
             ■ Stop Live Driver Mode
           </button>
@@ -203,4 +205,5 @@ export default function LiveDriverMode({ onPredictionSuccess }) {
       )}
     </div>
   );
+
 }

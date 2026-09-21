@@ -35,10 +35,10 @@ export default function StatsCards({ triggerRefresh }) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 animate-pulse">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-24 bg-slate-900/80 rounded-lg border border-slate-800 p-5 flex flex-col justify-between">
-            <div className="h-3 w-24 bg-slate-800 rounded"></div>
-            <div className="h-8 w-16 bg-slate-800 rounded mt-2"></div>
-            <div className="h-2 w-32 bg-slate-800/60 rounded mt-2"></div>
+          <div key={i} className="h-28 bg-[#0F0F0F] rounded-3xl border border-white/10 p-5 flex flex-col justify-between">
+            <div className="h-3 w-24 bg-white/10 rounded-full"></div>
+            <div className="h-8 w-16 bg-white/10 rounded-full mt-2"></div>
+            <div className="h-2 w-32 bg-white/5 rounded-full mt-2"></div>
           </div>
         ))}
       </div>
@@ -47,11 +47,11 @@ export default function StatsCards({ triggerRefresh }) {
 
   if (error) {
     return (
-      <div className="bg-red-950/20 border border-red-900/40 rounded-lg p-4 text-center text-xs text-red-400 flex items-center justify-between">
+      <div className="bg-red-950/20 border border-red-500/30 rounded-3xl p-4 text-center text-xs text-red-400 flex items-center justify-between">
         <span>{error}</span>
         <button
           onClick={fetchStats}
-          className="bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-300 px-3 py-1 rounded transition"
+          className="bg-white/5 border border-white/10 hover:border-white/20 text-slate-300 px-4 py-1.5 rounded-full transition"
         >
           Retry
         </button>
@@ -63,25 +63,25 @@ export default function StatsCards({ triggerRefresh }) {
     {
       title: "Total Predictions",
       value: stats.total_predictions,
-      gradient: "from-blue-600 to-indigo-600",
+      gradient: "from-[#F97316] to-[#FB923C]",
       desc: "Historical risk lookups run",
     },
     {
       title: "Average Risk Score",
       value: `${stats.average_risk}%`,
-      gradient: "from-emerald-600 to-teal-600",
+      gradient: "from-emerald-500 to-teal-400",
       desc: "Mean calculated danger factor",
     },
     {
       title: "High Risk Hotspots",
       value: stats.high_risk_count,
-      gradient: "from-amber-600 to-orange-600",
+      gradient: "from-amber-500 to-orange-500",
       desc: "Locations categorized High Risk",
     },
     {
       title: "Critical Hazards",
       value: stats.critical_risk_count,
-      gradient: "from-red-800 to-rose-700",
+      gradient: "from-red-600 to-rose-500",
       desc: "Dangerous segments detected",
     },
   ];
@@ -91,15 +91,15 @@ export default function StatsCards({ triggerRefresh }) {
       {statItems.map((item, index) => (
         <div
           key={index}
-          className="relative bg-slate-900 border border-slate-800 rounded-lg p-5 overflow-hidden flex flex-col justify-between hover:border-slate-700 transition"
+          className="relative bg-[#0F0F0F] border border-white/10 rounded-3xl p-5 overflow-hidden flex flex-col justify-between hover:border-white/20 transition backdrop-blur-xl group"
         >
           <div>
-            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block mb-1">
+            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block mb-1 font-sans">
               {item.title}
             </span>
-            <span className="text-3xl font-bold text-white tracking-tight">{item.value}</span>
+            <span className="text-3xl font-bold text-white tracking-tight font-mono">{item.value}</span>
           </div>
-          <span className="text-[11px] text-slate-500 mt-2 block font-mono">{item.desc}</span>
+          <span className="text-[11px] text-slate-500 mt-2 block font-sans">{item.desc}</span>
           {/* Subtle colored top line indicator */}
           <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${item.gradient}`}></div>
         </div>
