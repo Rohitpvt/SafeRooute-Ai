@@ -2,6 +2,7 @@ import time
 import uuid
 from datetime import datetime
 from typing import Any
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Response, status
 from fastapi.exceptions import RequestValidationError
@@ -15,8 +16,6 @@ from app.config import settings
 from app.database import engine, Base
 from app.logging_config import logger
 from app.routers import api_router
-
-from contextlib import asynccontextmanager
 from ml.model_manager import model_manager
 
 # Ensure all models are loaded for table metadata registration
@@ -37,164 +36,122 @@ async def lifespan(app: FastAPI):
         except Exception as e:
                     logger.warning(f"Database schema auto-creation notice: {str(e)}")
 
-        # Load ML models into memory at startup
-        logger.info("Loading ML models into memory...")
-        try:
-                    model_manager.load_all()
-                    logger.info("ML models loaded successfully.")
-except Exception as e:
-        logger.warning(f"Failed to pre-load ML models at startup: {e}")
-
-    yield
-
-    logger.info("Shutting down FastAPI application...")
+        model_manager.load_models()
+        yield
+        logger.info("Shutting down FastAPI application...")
 
 
 app = FastAPI(
-        title=settings.PROJECT_NAME,
-        openapi_url=f"{settings.API_V1_STR}/openapi.json",
+        title="SafeRoute AI Backend API",
+        description="Backend API for SafeRoute AI - Real-time accident prediction and route safety analytics.",
+        version=settings.VERSION,
+        docs_url="/docs" if settings.ENVIRONMENT != "production" else None,
+        redoc_url="/redoc" if settings.ENVIRONMENT != "production" else None,
+        openapi_url="/openapi.json" if settings.ENVIRONMENT != "production" else None,
         lifespan=lifespan,
 )
 
-# CORS Middleware Configuration
-if settings.BACKEND_CORS_ORIGINS:
-        app.add_middleware(
-                    CORSMiddleware,
-                    allow_origins=[str(origin).rstrip("/") for origin in settings.BACKEND_CORS_ORIGINS],
-                    allow_credentials=True,
-                    allow_methods=["*"],
-                    allow_headers=["*"],
-        )
+allowed_origins = [str(origin) for origin in settings.CORS_ORIGINS]
 
-# Trusted Host Middleware (for production security)
-if settings.ENVIRONMENT == "production":
-        app.add_middleware(
-                    TrustedHostMiddleware,
-                    allowed_hosts=settings.ALLOWED_HOSTS,
-        )
+app.add_middleware(
+        CORSMiddleware,
+        allow_origins=allowed_origins if allowed_origins else ["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+)
+
+app.add_middleware(
+        TrustedHostMiddleware,
+        allowed_hosts=["*"],
+)
 
 
-# Request ID and Performance Middleware
 @app.middleware("http")
-async def add_request_metadata(request: Request, call_next: Any) -> Response:
+async def add_process_time_and_request_id(request: Request, call_next: Any) -> Response:
         request_id = str(uuid.uuid4())
+        request.state.request_id = request_id
         start_time = time.time()
 
-    # Store request_id in state for access in endpoints if needed
-        request.state.request_id = request_id
-
-    try:
-                response = await call_next(request)
-except Exception as exc:
-            process_time = (time.time() - start_time) * 1000
-            logger.error(
-                f"Unhandled exception | request_id={request_id} | path={request.url.path} | duration={process_time:.2f}ms | error={str(exc)}"
-            )
-            raise exc
+    response = await call_next(request)
 
     process_time = (time.time() - start_time) * 1000
+    response.headers["X-Process-Time"] = f"{process_time:.2f}ms"
     response.headers["X-Request-ID"] = request_id
-    response.headers["X-Process-Time-Ms"] = f"{process_time:.2f}"
-
-    logger.info(
-                f"HTTP {request.method} {request.url.path} | status={response.status_code} | duration={process_time:.2f}ms | request_id={request_id}"
-    )
-
     return response
 
 
-# Global Exception Handlers
 @app.exception_handler(StarletteHTTPException)
-async def http_exception_handler(request: Request, exc: StarletteHTTPException) -> JSONResponse:
-        request_id = getattr(request.state, "request_id", "N/A")
-        logger.warning(
-            f"HTTPException | status={exc.status_code} | detail={exc.detail} | path={request.url.path} | request_id={request_id}"
-        )
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
         return JSONResponse(
-            status_code=exc.status_code,
-            content={
-                "error": exc.detail if isinstance(exc.detail, str) else "HTTP Exception",
-                "status_code": exc.status_code,
-                "request_id": request_id,
-                "timestamp": datetime.utcnow().isoformat(),
-            },
+                    status_code=exc.status_code,
+                    content={
+                                    "error": exc.detail if isinstance(exc.detail, str) else "HTTP Exception",
+                                    "code": exc.status_code,
+                                    "timestamp": datetime.utcnow().isoformat(),
+                                    "path": request.url.path,
+                    },
         )
 
 
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
-        request_id = getattr(request.state, "request_id", "N/A")
-        logger.warning(
-            f"ValidationError | path={request.url.path} | errors={exc.errors()} | request_id={request_id}"
-        )
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
         return JSONResponse(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content={
-                "error": "Validation Error",
-                "details": exc.errors(),
-                "status_code": 422,
-                "request_id": request_id,
-                "timestamp": datetime.utcnow().isoformat(),
-            },
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    content={
+                                    "error": "Validation Error",
+                                    "code": 422,
+                                    "details": exc.errors(),
+                                    "timestamp": datetime.utcnow().isoformat(),
+                                    "path": request.url.path,
+                    },
         )
 
 
 @app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-        request_id = getattr(request.state, "request_id", "N/A")
-        logger.error(
-            f"Unhandled Global Error | path={request.url.path} | error={str(exc)} | request_id={request_id}",
-            exc_info=True
-        )
+async def unhandled_exception_handler(request: Request, exc: Exception):
+        logger.error(f"Unhandled server error at {request.url.path}: {str(exc)}", exc_info=True)
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
                 "error": "Internal Server Error",
-                "status_code": 500,
-                "request_id": request_id,
+                "code": 500,
                 "timestamp": datetime.utcnow().isoformat(),
+                "path": request.url.path,
             },
         )
 
 
-# Health Check Endpoints
-@app.get("/health", tags=["System"])
-async def health_check() -> dict[str, Any]:
-        """Simple liveness probe endpoint."""
-        return {
-            "status": "healthy",
-            "timestamp": datetime.utcnow().isoformat(),
-            "environment": settings.ENVIRONMENT,
-        }
-
-
-@app.get("/health/ready", tags=["System"])
-async def readiness_check() -> dict[str, Any]:
-        """Readiness probe checking database connectivity."""
-        db_status = "ok"
+@app.get("/health", tags=["Health"])
+async def health_check():
+        db_status = "unhealthy"
         try:
                     async with engine.connect() as conn:
                                     await conn.execute(text("SELECT 1"))
+                                    db_status = "healthy"
         except Exception as e:
-                    logger.error(f"Readiness check database connection failed: {e}")
-                    db_status = "unavailable"
+                    logger.warning(f"Database health check failed: {str(e)}")
 
-        models_loaded = True
-        try:
-                    if not model_manager.models:
-                                    models_loaded = False
-        except Exception:
-                    models_loaded = False
-
-        is_ready = db_status == "ok"
+        models_loaded = model_manager.is_loaded()
 
     return {
-                "status": "ready" if is_ready else "not_ready",
+                "status": "healthy" if db_status == "healthy" else "degraded",
+                "timestamp": datetime.utcnow().isoformat(),
+                "version": settings.VERSION,
+                "environment": settings.ENVIRONMENT,
                 "database": db_status,
                 "ml_models_loaded": models_loaded,
-                "timestamp": datetime.utcnow().isoformat(),
     }
 
 
-# Include API Routers
-app.include_router(api_router, prefix=settings.API_V1_STR)
+@app.get("/", tags=["Root"])
+async def root():
+        return {
+                    "name": "SafeRoute AI API",
+                    "status": "running",
+                    "version": settings.VERSION,
+                    "documentation": "/docs" if settings.ENVIRONMENT != "production" else "Disabled in production",
+        }
+
+
+app.include_router(api_router, prefix="/api/v1")
