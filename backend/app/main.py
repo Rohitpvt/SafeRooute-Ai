@@ -12,15 +12,31 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.config import settings
 from app.database import engine
+from app.database import engine, Base
 from app.logging_config import logger
 from app.routers import api_router
 
 from contextlib import asynccontextmanager
 from ml.model_manager import model_manager
 
+# Ensure all models are loaded for table metadata registration
+import app.models.user  # noqa: F401
+import app.models.prediction  # noqa: F401
+import app.models.hazard  # noqa: F401
+import app.models.audit  # noqa: F401
+import app.models.safety_alert  # noqa: F401
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Starting up FastAPI application: Loading model artifacts...")
+    logger.info("Starting up FastAPI application: Initializing database tables...")
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("Database schema initialized successfully.")
+    except Exception as e:
+        logger.warning(f"Database schema auto-creation notice: {str(e)}")
+
+    logger.info("Loading ML model artifacts...")
     try:
         model_manager.load_artifacts()
     except Exception as e:
@@ -58,8 +74,9 @@ app.add_middleware(
 # Trusted Host configurations
 app.add_middleware(
     TrustedHostMiddleware,
-    allowed_hosts=["localhost", "127.0.0.1", "testserver", "api.saferouteai.com", "*.saferouteai.com", "db", "backend"],
+    allowed_hosts=["*"],
 )
+
 
 
 from app.utils.responses import build_api_response
