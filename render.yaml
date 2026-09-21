@@ -1,36 +1,31 @@
-# Render Infrastructure Blueprint for SafeRoute AI
 services:
-  # 1. Python FastAPI Backend Service
   - type: web
-    name: saferoute-ai-backend
-    env: python
-    region: singapore
-    plan: free
-    rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port 10000
-    envVars:
-      - key: ENVIRONMENT
-        value: production
+  name: saferoute-ai-backend
+  env: python
+  region: singapore
+  plan: free
+  rootDir: backend
+  buildCommand: pip install -r requirements.txt
+  startCommand: uvicorn app.main:app --host 0.0.0.0 --port 10000
+  envVars:
+    - key: ENVIRONMENT
+    value: production
       - key: VERSION
-        value: 2.0.0
-      - key: CORS_ORIGINS
+      value: 2.0.0
+        - key: CORS_ORIGINS
         value: '["https://saferoute-ai.onrender.com", "http://localhost:5173"]'
-      - key: JWT_SECRET_KEY
-        generateValue: true
-
-  # 2. React 19 Frontend Static Site
-    - type: static
-    name: saferoute-ai-frontend
-  
-
-    rootDir: frontend
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    envVars:
-      - key: VITE_API_BASE_URL
-        value: https://saferoute-ai-backend.onrender.com/api/v1
+          - key: JWT_SECRET_KEY
+          generateValue: true
+      - type: static
+      name: saferoute-ai-frontend
+      rootDir: frontend
+      buildCommand: npm install && npm run build
+      staticPublishPath: dist
+      routes:
+        - type: rewrite
+            source: /*
+                destination: /index.html
+                envVars:
+                  - key: VITE_API_BASE_URL
+                      value: https://saferoute-ai-backend.onrender.com/api/v1
+                      
