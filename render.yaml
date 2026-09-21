@@ -20,11 +20,10 @@ services:
         generateValue: true
 
   # 2. React 19 Frontend Static Site
-  - type: web
+    - type: static
     name: saferoute-ai-frontend
-    env: static
   
-    plan: free
+
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
