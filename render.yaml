@@ -1,4 +1,3 @@
-# Render Infrastructure Blueprint for SafeRoute AI
 services:
 - type: web
 name: saferoute-ai-backend
@@ -19,8 +18,8 @@ value: '["https://saferoute-ai-frontend.onrender.com", "https://saferoute-ai.onr
 generateValue: true
 
 - type: web
-env: static
 name: saferoute-ai-frontend
+env: static
 rootDir: frontend
 buildCommand: npm install && npm run build
 staticPublishPath: dist
