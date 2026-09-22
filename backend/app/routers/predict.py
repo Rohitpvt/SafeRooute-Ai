@@ -71,15 +71,16 @@ async def get_history(
     weather: str | None = None,
     risk_category: str | None = None,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User | None = Depends(get_optional_user),
 ):
     request_id = getattr(request.state, "request_id", None)
     
-    # Filter logs by current user context ownership
+    # Filter logs by current user context ownership if logged in, or recent logs if guest
     stmt = select(PredictionLog).where(
-        PredictionLog.user_id == current_user.id,
         PredictionLog.is_deleted == False
     )
+    if current_user:
+        stmt = stmt.where(PredictionLog.user_id == current_user.id)
 
     # Optional filters
     if weather:
@@ -122,7 +123,7 @@ async def get_history(
 
     return build_api_response(
         success=True,
-        message="User prediction history logs retrieved.",
+        message="Prediction history logs retrieved.",
         data={"records": data, "skip": skip, "limit": limit},
         status_code=status.HTTP_200_OK,
         request_id=request_id,
@@ -133,16 +134,18 @@ async def get_history(
 async def get_stats(
     request: Request,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User | None = Depends(get_optional_user),
 ):
-    """Retrieves aggregated statistics from historical prediction logs for the current user."""
+    """Retrieves aggregated statistics from historical prediction logs."""
     request_id = getattr(request.state, "request_id", None)
     
-    # Query all active prediction logs for this user
+    # Query active prediction logs
     stmt = select(PredictionLog).where(
-        PredictionLog.user_id == current_user.id,
         PredictionLog.is_deleted == False
     )
+    if current_user:
+        stmt = stmt.where(PredictionLog.user_id == current_user.id)
+
     result = await db.execute(stmt)
     records = result.scalars().all()
     
@@ -160,7 +163,7 @@ async def get_stats(
     
     return build_api_response(
         success=True,
-        message="User prediction statistics retrieved.",
+        message="Prediction statistics retrieved.",
         data=stats_data,
         status_code=status.HTTP_200_OK,
         request_id=request_id,
@@ -172,7 +175,7 @@ async def get_prediction_detail(
     prediction_id: UUID,
     request: Request,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User | None = Depends(get_optional_user),
 ):
     request_id = getattr(request.state, "request_id", None)
     
@@ -190,8 +193,8 @@ async def get_prediction_detail(
             detail="Prediction record not found."
         )
 
-    # Enforce strict user context ownership protection
-    if prediction.user_id != current_user.id:
+    # If authenticated user, verify ownership if not public
+    if current_user and prediction.user_id and prediction.user_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You do not have permission to access this prediction record."

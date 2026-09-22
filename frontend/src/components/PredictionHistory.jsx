@@ -36,13 +36,17 @@ export default function PredictionHistory({ triggerRefresh, onSelectItem }) {
         setRecords([]);
       }
     } catch (err) {
-      console.error("Failed to load prediction logs history:", err);
-      const detailMsg = err.response?.data?.detail;
-      const status = err.response?.status;
-      const msg = detailMsg
-        ? `Unable to load prediction history (HTTP ${status}: ${typeof detailMsg === "object" ? JSON.stringify(detailMsg) : detailMsg})`
-        : "Unable to load prediction history.";
-      setError(msg);
+      console.warn("Prediction logs history notice:", err);
+      if (err.response?.status === 401 || !err.response) {
+        setRecords([]);
+        setError(null);
+      } else {
+        const detailMsg = err.response?.data?.detail;
+        const msg = detailMsg
+          ? `Unable to load prediction history (${typeof detailMsg === "object" ? JSON.stringify(detailMsg) : detailMsg})`
+          : "Unable to load prediction history.";
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
