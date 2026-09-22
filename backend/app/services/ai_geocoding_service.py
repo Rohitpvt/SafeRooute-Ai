@@ -202,24 +202,46 @@ class AIGeocodingService:
 
         masked = key_to_test[:6] + "..." + key_to_test[-4:] if len(key_to_test) > 10 else "***"
         
-        # Test Gemini 1.5 Flash endpoint
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key_to_test}"
-        headers = {"Content-Type": "application/json"}
-        payload = {
-            "contents": [{"parts": [{"text": "ping"}]}],
-            "generationConfig": {"maxOutputTokens": 5},
-        }
+        # Test key validity via official ListModels endpoint
+        list_url = f"https://generativelanguage.googleapis.com/v1beta/models?key={key_to_test}"
 
         try:
-            async with httpx.AsyncClient(timeout=6.0) as client:
-                resp = await client.post(url, headers=headers, json=payload)
+            async with httpx.AsyncClient(timeout=8.0) as client:
+                resp = await client.get(list_url)
                 if resp.status_code == 200:
+                    data = resp.json()
+                    models_list = data.get("models", [])
+                    gen_models = [
+                        m.get("name", "").replace("models/", "")
+                        for m in models_list
+                        if "generateContent" in m.get("supportedGenerationMethods", [])
+                    ]
+                    
+                    # Identify best available model
+                    preferred_order = [
+                        "gemini-1.5-flash-latest",
+                        "gemini-1.5-flash",
+                        "gemini-2.0-flash",
+                        "gemini-1.5-pro",
+                        "gemini-pro",
+                    ]
+                    selected_model = "gemini-1.5-flash"
+                    for pref in preferred_order:
+                        match = next((m for m in gen_models if pref in m), None)
+                        if match:
+                            selected_model = match
+                            break
+                    else:
+                        if gen_models:
+                            selected_model = gen_models[0]
+
                     return {
                         "configured": True,
                         "valid": True,
                         "status": "ACTIVE_VALID",
-                        "model": "gemini-1.5-flash",
-                        "message": "Gemini API key is valid, active, and successfully communicating with Google AI Studio.",
+                        "model": selected_model,
+                        "available_models_count": len(gen_models),
+                        "message": f"Gemini API key is valid and connected to Google AI Studio (Active Model: {selected_model}).",
                         "masked_key": masked,
                     }
                 else:
@@ -263,32 +285,41 @@ class AIGeocodingService:
             "Do NOT output coordinates, markdown formatting, or explanation. Return ONLY valid JSON."
         )
 
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={active_key}"
+        candidate_endpoints = [
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={active_key}",
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={active_key}",
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={active_key}",
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key={active_key}",
+            f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={active_key}",
+            f"https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key={active_key}",
+        ]
+
         headers = {"Content-Type": "application/json"}
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": {"temperature": 0.1, "maxOutputTokens": 100},
         }
 
-        try:
-            async with httpx.AsyncClient(timeout=4.0) as client:
-                resp = await client.post(url, headers=headers, json=payload)
-                if resp.status_code == 200:
-                    data = resp.json()
-                    candidates = data.get("candidates", [])
-                    if candidates:
-                        text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "").strip()
-                        match = re.search(r"\{.*\}", text, re.DOTALL)
-                        if match:
-                            parsed = json.loads(match.group(0))
-                            return {
-                                "place": parsed.get("place") or "",
-                                "locality": parsed.get("locality") or "",
-                                "landmark": parsed.get("landmark") or "",
-                                "city": parsed.get("city") or "Delhi",
-                            }
-        except Exception as e:
-            logger.warning(f"Gemini interpretation call failed: {e}")
+        for url in candidate_endpoints:
+            try:
+                async with httpx.AsyncClient(timeout=4.0) as client:
+                    resp = await client.post(url, headers=headers, json=payload)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        candidates = data.get("candidates", [])
+                        if candidates:
+                            text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "").strip()
+                            match = re.search(r"\{.*\}", text, re.DOTALL)
+                            if match:
+                                parsed = json.loads(match.group(0))
+                                return {
+                                    "place": parsed.get("place") or "",
+                                    "locality": parsed.get("locality") or "",
+                                    "landmark": parsed.get("landmark") or "",
+                                    "city": parsed.get("city") or "Delhi",
+                                }
+            except Exception as e:
+                logger.debug(f"Gemini endpoint probe failed for {url.split('?')[0]}: {e}")
 
         return None
 
