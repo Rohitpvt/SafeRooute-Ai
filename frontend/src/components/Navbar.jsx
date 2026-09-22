@@ -65,25 +65,26 @@ export const Navbar = () => {
 
           {/* Quick API Key Trigger & User Auth Profile CTA */}
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setApiKeyModalOpen(true)}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:border-orange-500/50 text-slate-300 hover:text-orange-300 text-xs font-mono font-medium transition group"
-              title="Configure Google Gemini & Maps API Keys in-app"
-            >
-              <span className="text-orange-400 group-hover:scale-110 transition transform">✨</span>
-              <span>AI Keys</span>
-            </button>
-
             {user ? (
-              <div className="relative flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:border-[#F97316]/50 text-slate-200 hover:text-white transition group"
+                  type="button"
+                  onClick={() => setApiKeyModalOpen(true)}
+                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:border-orange-500/50 text-slate-300 hover:text-orange-300 text-xs font-mono font-medium transition group"
+                  title="Configure Google Gemini & Maps API Keys in-app"
                 >
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-amber-600 to-[#F97316] flex items-center justify-center text-black font-bold text-[11px] font-mono shadow-sm group-hover:scale-105 transition">
-                    {user.full_name ? user.full_name.charAt(0).toUpperCase() : user.email ? user.email.charAt(0).toUpperCase() : 'U'}
-                  </div>
+                  <span className="text-orange-400 group-hover:scale-110 transition transform">✨</span>
+                  <span>AI Keys</span>
+                </button>
+
+                <div className="relative flex items-center gap-2">
+                  <button
+                    onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:border-[#F97316]/50 text-slate-200 hover:text-white transition group"
+                  >
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-amber-600 to-[#F97316] flex items-center justify-center text-black font-bold text-[11px] font-mono shadow-sm group-hover:scale-105 transition">
+                      {user.full_name ? user.full_name.charAt(0).toUpperCase() : user.email ? user.email.charAt(0).toUpperCase() : 'U'}
+                    </div>
                   <span className="max-w-[120px] truncate text-xs font-mono text-slate-300">
                     {user.full_name || user.email.split('@')[0]}
                   </span>
@@ -131,6 +132,7 @@ export const Navbar = () => {
                     </button>
                   </div>
                 )}
+                </div>
               </div>
             ) : (
               <div className="flex items-center gap-2">
