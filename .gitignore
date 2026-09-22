@@ -39,8 +39,9 @@ Thumbs.db
 backend/.env
 frontend/.env
 
-# ML model binaries and scaled components
-*.joblib
+# ML model binaries and scaled components (ignore heavy archives, allow active production models)
+backend/ml/archive/
+backend/ml/candidate_*.joblib
 *.pkl
 backend/ml/models/*.joblib
 backend/ml/models/*.joblib.tmp
