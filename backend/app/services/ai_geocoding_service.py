@@ -18,69 +18,105 @@ DELHI_NCR_BOUNDS = {
 
 # Local Presets (Authoritative Fast-Path for Delhi NCR Places)
 LOCAL_PRESET_DICTIONARY: Dict[str, Dict[str, Any]] = {
+    # Major Transportation Hubs & Terminals
+    "kashmiri gate": {"lat": 28.6675, "lng": 77.2285, "name": "Kashmere Gate, Old Delhi"},
+    "kashmere gate": {"lat": 28.6675, "lng": 77.2285, "name": "Kashmere Gate, Old Delhi"},
+    "isbt": {"lat": 28.6675, "lng": 77.2285, "name": "Kashmere Gate ISBT, Old Delhi"},
+    "isbt kashmere gate": {"lat": 28.6675, "lng": 77.2285, "name": "Kashmere Gate ISBT, Old Delhi"},
+    "isbt kashmiri gate": {"lat": 28.6675, "lng": 77.2285, "name": "Kashmere Gate ISBT, Old Delhi"},
+    "kashmiri gate metro": {"lat": 28.6675, "lng": 77.2285, "name": "Kashmere Gate Metro Station"},
+    "kashmere gate metro": {"lat": 28.6675, "lng": 77.2285, "name": "Kashmere Gate Metro Station"},
+    "new delhi railway station": {"lat": 28.6428, "lng": 77.2201, "name": "New Delhi Railway Station (NDLS)"},
+    "ndls": {"lat": 28.6428, "lng": 77.2201, "name": "New Delhi Railway Station (NDLS)"},
+    "old delhi railway station": {"lat": 28.6617, "lng": 77.2307, "name": "Old Delhi Railway Station (DLI)"},
+    "dli": {"lat": 28.6617, "lng": 77.2307, "name": "Old Delhi Railway Station (DLI)"},
+    "hazrat nizamuddin": {"lat": 28.5885, "lng": 77.2536, "name": "Hazrat Nizamuddin Railway Station"},
+    "nizamuddin": {"lat": 28.5885, "lng": 77.2536, "name": "Hazrat Nizamuddin Railway Station"},
+    "anand vihar isbt": {"lat": 28.6469, "lng": 77.3160, "name": "Anand Vihar ISBT, East Delhi"},
+    "anand vihar": {"lat": 28.6469, "lng": 77.3160, "name": "Anand Vihar, East Delhi"},
+    "sarai kale khan": {"lat": 28.5900, "lng": 77.2567, "name": "Sarai Kale Khan ISBT, South Delhi"},
+    "igi airport": {"lat": 28.5562, "lng": 77.1000, "name": "IGI Airport T3, New Delhi"},
+    "delhi airport": {"lat": 28.5562, "lng": 77.1000, "name": "IGI Airport T3, New Delhi"},
+    "aerocity": {"lat": 28.5490, "lng": 77.1210, "name": "Aerocity, New Delhi"},
+
+    # Central & Historical Landmarks
     "connaught place": {"lat": 28.6315, "lng": 77.2167, "name": "Connaught Place, New Delhi"},
     "cp": {"lat": 28.6315, "lng": 77.2167, "name": "Connaught Place, New Delhi"},
+    "rajiv chowk": {"lat": 28.6328, "lng": 77.2197, "name": "Rajiv Chowk (CP), New Delhi"},
     "india gate": {"lat": 28.6129, "lng": 77.2295, "name": "India Gate, New Delhi"},
+    "red fort": {"lat": 28.6562, "lng": 77.2410, "name": "Red Fort, Central Delhi"},
+    "lal qila": {"lat": 28.6562, "lng": 77.2410, "name": "Red Fort, Central Delhi"},
+    "chandni chowk": {"lat": 28.6506, "lng": 77.2303, "name": "Chandni Chowk, Central Delhi"},
+    "jama masjid": {"lat": 28.6507, "lng": 77.2334, "name": "Jama Masjid, Central Delhi"},
+    "khan market": {"lat": 28.6003, "lng": 77.2270, "name": "Khan Market, Central Delhi"},
+
+    # South Delhi
+    "aiims": {"lat": 28.5672, "lng": 77.2100, "name": "AIIMS New Delhi, South Delhi"},
+    "aiims delhi": {"lat": 28.5672, "lng": 77.2100, "name": "AIIMS New Delhi, South Delhi"},
+    "safdarjung": {"lat": 28.5684, "lng": 77.2062, "name": "Safdarjung Hospital, South Delhi"},
     "dhaula kuan": {"lat": 28.5912, "lng": 77.1580, "name": "Dhaula Kuan, New Delhi"},
-    "cyber city": {"lat": 28.4950, "lng": 77.0890, "name": "Cyber City, Gurugram"},
-    "noida sector 18": {"lat": 28.5700, "lng": 77.3200, "name": "Noida Sector 18, UP"},
-    "shalimar bagh": {"lat": 28.7167, "lng": 77.1667, "name": "Shalimar Bagh, North Delhi"},
-    "shalimar bagh delhi": {"lat": 28.7167, "lng": 77.1667, "name": "Shalimar Bagh, North Delhi"},
-    "inderlok": {"lat": 28.6733, "lng": 77.1706, "name": "Inderlok, North West Delhi"},
-    "inderlok delhi": {"lat": 28.6733, "lng": 77.1706, "name": "Inderlok, North West Delhi"},
-    "karol bagh": {"lat": 28.6514, "lng": 77.1907, "name": "Karol Bagh, New Delhi"},
-    "karol bagh delhi": {"lat": 28.6514, "lng": 77.1907, "name": "Karol Bagh, New Delhi"},
     "lajpat nagar": {"lat": 28.5677, "lng": 77.2433, "name": "Lajpat Nagar, South Delhi"},
     "saket": {"lat": 28.5244, "lng": 77.2105, "name": "Saket, South Delhi"},
-    "dwarka": {"lat": 28.5921, "lng": 77.0460, "name": "Dwarka, New Delhi"},
-    "janakpuri": {"lat": 28.6219, "lng": 77.0878, "name": "Janakpuri, West Delhi"},
-    "rohini": {"lat": 28.7041, "lng": 77.1025, "name": "Rohini, North Delhi"},
-    "ashok vihar": {"lat": 28.6965, "lng": 77.1729, "name": "Ashok Vihar, North Delhi"},
-    "pitampura": {"lat": 28.6989, "lng": 77.1384, "name": "Pitampura, North Delhi"},
-    "model town": {"lat": 28.7029, "lng": 77.1937, "name": "Model Town, North Delhi"},
-    "paschim vihar": {"lat": 28.6698, "lng": 77.0926, "name": "Paschim Vihar, West Delhi"},
-    "punjabi bagh": {"lat": 28.6692, "lng": 77.1264, "name": "Punjabi Bagh, West Delhi"},
-    "rajouri garden": {"lat": 28.6492, "lng": 77.1226, "name": "Rajouri Garden, West Delhi"},
-    "kirti nagar": {"lat": 28.6558, "lng": 77.1408, "name": "Kirti Nagar, West Delhi"},
-    "subhash nagar": {"lat": 28.6416, "lng": 77.1042, "name": "Subhash Nagar, West Delhi"},
-    "tilak nagar": {"lat": 28.6366, "lng": 77.0963, "name": "Tilak Nagar, West Delhi"},
-    "uttam nagar": {"lat": 28.6216, "lng": 77.0560, "name": "Uttam Nagar, West Delhi"},
-    "vikaspuri": {"lat": 28.6385, "lng": 77.0694, "name": "Vikaspuri, West Delhi"},
-    "vasant kunj": {"lat": 28.5293, "lng": 77.1552, "name": "Vasant Kunj, South Delhi"},
-    "vasant vihar": {"lat": 28.5588, "lng": 77.1601, "name": "Vasant Vihar, South Delhi"},
     "hauz khas": {"lat": 28.5494, "lng": 77.2001, "name": "Hauz Khas, South Delhi"},
+    "iit delhi": {"lat": 28.5450, "lng": 77.1926, "name": "IIT Delhi, Hauz Khas"},
     "green park": {"lat": 28.5589, "lng": 77.2028, "name": "Green Park, South Delhi"},
     "malviya nagar": {"lat": 28.5355, "lng": 77.2090, "name": "Malviya Nagar, South Delhi"},
     "greater kailash": {"lat": 28.5482, "lng": 77.2343, "name": "Greater Kailash, South Delhi"},
     "gk": {"lat": 28.5482, "lng": 77.2343, "name": "Greater Kailash, South Delhi"},
     "south extension": {"lat": 28.5694, "lng": 77.2195, "name": "South Extension, South Delhi"},
     "defence colony": {"lat": 28.5727, "lng": 77.2312, "name": "Defence Colony, South Delhi"},
-    "new friends colony": {"lat": 28.5621, "lng": 77.2691, "name": "New Friends Colony, South Delhi"},
-    "okhla": {"lat": 28.5308, "lng": 77.2713, "name": "Okhla Industrial Area, Delhi"},
-    "jasola": {"lat": 28.5402, "lng": 77.2831, "name": "Jasola, South Delhi"},
-    "sarita vihar": {"lat": 28.5299, "lng": 77.2917, "name": "Sarita Vihar, South Delhi"},
     "nehru place": {"lat": 28.5492, "lng": 77.2517, "name": "Nehru Place, South Delhi"},
     "kalkaji": {"lat": 28.5412, "lng": 77.2554, "name": "Kalkaji, South Delhi"},
-    "cr park": {"lat": 28.5383, "lng": 77.2464, "name": "CR Park, South Delhi"},
+    "lotus temple": {"lat": 28.5535, "lng": 77.2588, "name": "Lotus Temple, South Delhi"},
+    "qutub minar": {"lat": 28.5245, "lng": 77.1855, "name": "Qutub Minar, Mehrauli"},
+    "qutab minar": {"lat": 28.5245, "lng": 77.1855, "name": "Qutub Minar, Mehrauli"},
     "mehrauli": {"lat": 28.5173, "lng": 77.1852, "name": "Mehrauli, South Delhi"},
-    "chhatarpur": {"lat": 28.5029, "lng": 77.1842, "name": "Chhatarpur, South Delhi"},
+    "vasant kunj": {"lat": 28.5293, "lng": 77.1552, "name": "Vasant Kunj, South Delhi"},
+    "vasant vihar": {"lat": 28.5588, "lng": 77.1601, "name": "Vasant Vihar, South Delhi"},
+    "sarojini nagar": {"lat": 28.5772, "lng": 77.1983, "name": "Sarojini Nagar, South Delhi"},
+    "okhla": {"lat": 28.5308, "lng": 77.2713, "name": "Okhla Industrial Area, Delhi"},
+
+    # West & North-West Delhi
+    "inderlok": {"lat": 28.6733, "lng": 77.1706, "name": "Inderlok, North West Delhi"},
+    "inderlok delhi": {"lat": 28.6733, "lng": 77.1706, "name": "Inderlok, North West Delhi"},
+    "karol bagh": {"lat": 28.6514, "lng": 77.1907, "name": "Karol Bagh, New Delhi"},
+    "dwarka": {"lat": 28.5921, "lng": 77.0460, "name": "Dwarka, New Delhi"},
+    "janakpuri": {"lat": 28.6219, "lng": 77.0878, "name": "Janakpuri, West Delhi"},
+    "rajouri garden": {"lat": 28.6492, "lng": 77.1226, "name": "Rajouri Garden, West Delhi"},
+    "punjabi bagh": {"lat": 28.6692, "lng": 77.1264, "name": "Punjabi Bagh, West Delhi"},
+    "paschim vihar": {"lat": 28.6698, "lng": 77.0926, "name": "Paschim Vihar, West Delhi"},
+    "tilak nagar": {"lat": 28.6366, "lng": 77.0963, "name": "Tilak Nagar, West Delhi"},
+    "uttam nagar": {"lat": 28.6216, "lng": 77.0560, "name": "Uttam Nagar, West Delhi"},
+    "kirti nagar": {"lat": 28.6558, "lng": 77.1408, "name": "Kirti Nagar, West Delhi"},
+
+    # North Delhi
+    "shalimar bagh": {"lat": 28.7167, "lng": 77.1667, "name": "Shalimar Bagh, North Delhi"},
+    "rohini": {"lat": 28.7041, "lng": 77.1025, "name": "Rohini, North Delhi"},
+    "pitampura": {"lat": 28.6989, "lng": 77.1384, "name": "Pitampura, North Delhi"},
+    "model town": {"lat": 28.7029, "lng": 77.1937, "name": "Model Town, North Delhi"},
+    "ashok vihar": {"lat": 28.6965, "lng": 77.1729, "name": "Ashok Vihar, North Delhi"},
+    "delhi university": {"lat": 28.6892, "lng": 77.2114, "name": "Delhi University North Campus"},
+    "vips": {"lat": 28.7180, "lng": 77.1390, "name": "VIPS, Pitampura, Delhi"},
+
+    # East Delhi & NCR
     "laxmi nagar": {"lat": 28.6304, "lng": 77.2774, "name": "Laxmi Nagar, East Delhi"},
-    "preet vihar": { "lat": 28.6410, "lng": 77.2964, "name": "Preet Vihar, East Delhi" },
-    "nirman vihar": { "lat": 28.6373, "lng": 77.2882, "name": "Nirman Vihar, East Delhi" },
-    "anand vihar": { "lat": 28.6469, "lng": 77.3160, "name": "Anand Vihar, East Delhi" },
-    "mayur vihar": { "lat": 28.6090, "lng": 77.2942, "name": "Mayur Vihar, East Delhi" },
-    "shahdara": { "lat": 28.6732, "lng": 77.2873, "name": "Shahdara, East Delhi" },
-    "dilshad garden": { "lat": 28.6853, "lng": 77.3185, "name": "Dilshad Garden, East Delhi" },
-    "seelampur": { "lat": 28.6698, "lng": 77.2662, "name": "Seelampur, East Delhi" },
-    "indirapuram": { "lat": 28.6435, "lng": 77.3698, "name": "Indirapuram, Ghaziabad" },
-    "vaishali": { "lat": 28.6475, "lng": 77.3396, "name": "Vaishali, Ghaziabad" },
-    "kaushambi": { "lat": 28.6444, "lng": 77.3276, "name": "Kaushambi, Ghaziabad" },
-    "vasundhara": { "lat": 28.6622, "lng": 77.3631, "name": "Vasundhara, Ghaziabad" },
-    "noida": { "lat": 28.5700, "lng": 77.3200, "name": "Noida, Uttar Pradesh" },
-    "gurugram": { "lat": 28.4595, "lng": 77.0266, "name": "Gurugram, Haryana" },
-    "gurgaon": { "lat": 28.4595, "lng": 77.0266, "name": "Gurugram, Haryana" },
-    "faridabad": { "lat": 28.4089, "lng": 77.3178, "name": "Faridabad, Haryana" },
-    "ghaziabad": { "lat": 28.6692, "lng": 77.4538, "name": "Ghaziabad, Uttar Pradesh" },
+    "preet vihar": {"lat": 28.6410, "lng": 77.2964, "name": "Preet Vihar, East Delhi"},
+    "nirman vihar": {"lat": 28.6373, "lng": 77.2882, "name": "Nirman Vihar, East Delhi"},
+    "mayur vihar": {"lat": 28.6090, "lng": 77.2942, "name": "Mayur Vihar, East Delhi"},
+    "akshardham": {"lat": 28.6127, "lng": 77.2773, "name": "Akshardham Temple, East Delhi"},
+    "shahdara": {"lat": 28.6732, "lng": 77.2873, "name": "Shahdara, East Delhi"},
+    "dilshad garden": {"lat": 28.6853, "lng": 77.3185, "name": "Dilshad Garden, East Delhi"},
+    "cyber city": {"lat": 28.4950, "lng": 77.0890, "name": "Cyber City, Gurugram"},
+    "gurugram": {"lat": 28.4595, "lng": 77.0266, "name": "Gurugram, Haryana"},
+    "gurgaon": {"lat": 28.4595, "lng": 77.0266, "name": "Gurugram, Haryana"},
+    "noida sector 18": {"lat": 28.5700, "lng": 77.3200, "name": "Noida Sector 18, UP"},
+    "noida sector 62": {"lat": 28.6280, "lng": 77.3649, "name": "Noida Sector 62, UP"},
+    "noida": {"lat": 28.5700, "lng": 77.3200, "name": "Noida, Uttar Pradesh"},
+    "pari chowk": {"lat": 28.4682, "lng": 77.5097, "name": "Pari Chowk, Greater Noida"},
+    "indirapuram": {"lat": 28.6435, "lng": 77.3698, "name": "Indirapuram, Ghaziabad"},
+    "vaishali": {"lat": 28.6475, "lng": 77.3396, "name": "Vaishali, Ghaziabad"},
+    "ghaziabad": {"lat": 28.6692, "lng": 77.4538, "name": "Ghaziabad, Uttar Pradesh"},
+    "faridabad": {"lat": 28.4089, "lng": 77.3178, "name": "Faridabad, Haryana"},
 }
 
 # In-Memory Cache for Verified Results
@@ -88,8 +124,12 @@ _GEOCODE_CACHE: Dict[str, Dict[str, Any]] = {}
 
 
 def normalize_query_key(query: str) -> str:
-    """Normalizes query string for caching and lookup."""
-    return re.sub(r"\s+", " ", re.sub(r"[^a-zA-Z0-9\s]", "", query.lower())).strip()
+    """Normalizes query string with phonetic/alias support for caching and lookup."""
+    clean = re.sub(r"\s+", " ", re.sub(r"[^a-zA-Z0-9\s]", "", query.lower())).strip()
+    clean = re.sub(r"\bkashmiri\b", "kashmere", clean)
+    clean = re.sub(r"\bgurgaon\b", "gurugram", clean)
+    clean = re.sub(r"\bqutub\b", "qutab", clean)
+    return clean
 
 
 def validate_delhi_ncr_bounds(lat: float, lng: float) -> bool:
