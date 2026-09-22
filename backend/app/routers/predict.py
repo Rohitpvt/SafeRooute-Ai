@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc, asc
 
 from app.database import get_db
-from app.dependencies.auth import get_current_user
+from app.dependencies.auth import get_current_user, get_optional_user
 from app.models.user import User
 from app.models.prediction import PredictionLog
 from app.schemas.prediction import (
@@ -24,11 +24,12 @@ async def create_prediction(
     payload: PredictionRequest,
     request: Request,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User | None = Depends(get_optional_user),
 ):
     request_id = getattr(request.state, "request_id", None)
+    user_id = current_user.id if current_user else None
     result = await prediction_service.predict_risk(
-        db, payload, user_id=current_user.id, request_id=request_id
+        db, payload, user_id=user_id, request_id=request_id
     )
     return build_api_response(
         success=True,
@@ -44,12 +45,13 @@ async def create_batch_prediction(
     payload: BatchPredictionRequest,
     request: Request,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User | None = Depends(get_optional_user),
 ):
     """Executes vectorized batch risk prediction across multiple route segments in a single inference pass."""
     request_id = getattr(request.state, "request_id", None)
+    user_id = current_user.id if current_user else None
     result = await prediction_service.predict_batch_risk(
-        db, payload, user_id=current_user.id, request_id=request_id
+        db, payload, user_id=user_id, request_id=request_id
     )
     return build_api_response(
         success=True,

@@ -61,6 +61,9 @@ export default function LiveDriverMode({ onPredictionSuccess }) {
     position,
     speedKmH: telemetry.smoothedSpeedKmH,
     timeOfDay: telemetry.timeOfDay,
+    weather: envWeather,
+    trafficDensity: "Low",
+    roadType: "Arterial",
     enabled: isTracking && (gpsStatus === GPS_STATES.ACTIVE || gpsStatus === GPS_STATES.DEGRADED),
     onPredictionSuccess,
   });

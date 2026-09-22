@@ -12,6 +12,34 @@ from app.security.jwt import decode_token
 
 # OAuth2 schema configuration point to Login endpoint path
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
+
+
+async def get_optional_user(
+    token: str | None = Depends(oauth2_scheme_optional), db: AsyncSession = Depends(get_db)
+) -> User | None:
+    """Optional dependency validator returning active User context if valid JWT provided, else None."""
+    if not token:
+        return None
+    try:
+        payload = decode_token(token)
+        user_id_str: str | None = payload.get("sub")
+        jti: str | None = payload.get("jti")
+        token_type: str | None = payload.get("token_type")
+
+        if user_id_str is None or jti is None or token_type != "access":
+            return None
+            
+        user_id = UUID(user_id_str)
+        if await token_repo.is_blacklisted(db, jti):
+            return None
+
+        user = await user_repo.get(db, user_id)
+        if user is None or not user.is_active:
+            return None
+        return user
+    except Exception:
+        return None
 
 
 async def get_current_user(

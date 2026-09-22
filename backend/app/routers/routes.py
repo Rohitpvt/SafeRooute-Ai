@@ -79,7 +79,7 @@ async def preview_route(
     payload: RoutePreviewRequest,
     request: Request,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User | None = Depends(get_optional_user),
 ):
     """Fetches OSRM polyline route, partitions into hybrid segments, and enriches features without executing ML predictions."""
     request_id = getattr(request.state, "request_id", None)

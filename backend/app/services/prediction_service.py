@@ -1,6 +1,7 @@
 from typing import Any
 import time
 from datetime import datetime
+from uuid import uuid4
 import pandas as pd
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -29,7 +30,7 @@ class PredictionService:
 
         - Performs preprocessing using serialized transformers.
         - Calculates risk score and confidence.
-        - Preserves audit/logs history database transaction.
+        - Preserves audit/logs history database transaction if user authenticated.
         """
         start_time = time.time()
         
@@ -80,24 +81,30 @@ class PredictionService:
         else:
             risk_category = "Critical"
 
-        # 4. Persist prediction log history in DB
-        db_payload = {
-            "user_id": user_id,
-            "weather": payload.weather,
-            "traffic_density": payload.traffic_density,
-            "road_type": payload.road_type,
-            "average_speed": payload.average_speed,
-            "time_of_day": payload.time_of_day,
-            "risk_score": risk_score,
-            "risk_category": risk_category,
-            "accident_probability": confidence_score,  # save confidence
-            "latitude": payload.latitude,
-            "longitude": payload.longitude,
-            "location_name": payload.location_name,
-            "city": payload.city,
-            "state": payload.state,
-        }
-        log_obj = await prediction_repo.create(db, obj_in=db_payload)
+        # 4. Persist prediction log history in DB if user is authenticated
+        if user_id:
+            db_payload = {
+                "user_id": user_id,
+                "weather": payload.weather,
+                "traffic_density": payload.traffic_density,
+                "road_type": payload.road_type,
+                "average_speed": payload.average_speed,
+                "time_of_day": payload.time_of_day,
+                "risk_score": risk_score,
+                "risk_category": risk_category,
+                "accident_probability": confidence_score,  # save confidence
+                "latitude": payload.latitude,
+                "longitude": payload.longitude,
+                "location_name": payload.location_name,
+                "city": payload.city,
+                "state": payload.state,
+            }
+            log_obj = await prediction_repo.create(db, obj_in=db_payload)
+            pred_id = log_obj.id
+            pred_created_at = log_obj.created_at
+        else:
+            pred_id = uuid4()
+            pred_created_at = datetime.utcnow()
 
         # Latency calculations
         total_latency = time.time() - start_time
@@ -109,17 +116,17 @@ class PredictionService:
         )
 
         return PredictionResponse(
-            prediction_id=log_obj.id,
+            prediction_id=pred_id,
             risk_score=risk_score,
             confidence_score=confidence_score,
             risk_category=risk_category,
             model_version=model_version,
-            prediction_timestamp=log_obj.created_at,
-            latitude=log_obj.latitude,
-            longitude=log_obj.longitude,
-            location_name=log_obj.location_name,
-            city=log_obj.city,
-            state=log_obj.state,
+            prediction_timestamp=pred_created_at,
+            latitude=payload.latitude,
+            longitude=payload.longitude,
+            location_name=payload.location_name,
+            city=payload.city,
+            state=payload.state,
         )
 
     async def predict_batch_risk(
@@ -214,7 +221,7 @@ class PredictionService:
             overall_category = "Critical"
 
         # 4. Optional log entry for primary centroid segment to maintain audit history
-        if payload.segments:
+        if payload.segments and user_id:
             first_seg = payload.segments[0]
             db_payload = {
                 "user_id": user_id,

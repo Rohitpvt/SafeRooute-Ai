@@ -39,11 +39,13 @@ apiClient.interceptors.response.use(
 
       // Handle token expiration/auth failure globally
       if (status === 401) {
-        console.warn('Authentication token expired or invalid. Redirecting to login.');
+        console.warn('Authentication token expired or invalid.');
         localStorage.removeItem('access_token');
-        // If running in browser environment, redirect to login path
         if (typeof window !== 'undefined') {
-          window.location.href = '/login?session_expired=true';
+          const path = window.location.pathname;
+          if (path.startsWith('/admin') || path.startsWith('/profile') || path.startsWith('/settings')) {
+            window.location.href = '/login?session_expired=true';
+          }
         }
       }
 
