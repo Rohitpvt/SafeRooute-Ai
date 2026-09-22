@@ -171,8 +171,64 @@ class AIGeocodingService:
     Coordinates originate exclusively from Authoritative Geocoders (LOCAL_PRESET, NOMINATIM, OPEN_METEO).
     """
 
-    def __init__(self, api_key: Optional[str] = None):
-        self.api_key = api_key or getattr(settings, "GEMINI_API_KEY", "") or os.environ.get("GEMINI_API_KEY", "")
+    @staticmethod
+    async def validate_api_key(test_key: Optional[str] = None) -> Dict[str, Any]:
+        """Directly probes Google Gemini API to test key validity and model accessibility."""
+        key_to_test = test_key or getattr(settings, "GEMINI_API_KEY", "") or os.environ.get("GEMINI_API_KEY", "")
+        if not key_to_test or not key_to_test.strip():
+            return {
+                "configured": False,
+                "valid": False,
+                "status": "NOT_CONFIGURED",
+                "message": "No GEMINI_API_KEY configured in backend environment variables.",
+                "masked_key": None,
+            }
+
+        masked = key_to_test[:6] + "..." + key_to_test[-4:] if len(key_to_test) > 10 else "***"
+        
+        # Test Gemini 1.5 Flash endpoint
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key_to_test}"
+        headers = {"Content-Type": "application/json"}
+        payload = {
+            "contents": [{"parts": [{"text": "ping"}]}],
+            "generationConfig": {"maxOutputTokens": 5},
+        }
+
+        try:
+            async with httpx.AsyncClient(timeout=6.0) as client:
+                resp = await client.post(url, headers=headers, json=payload)
+                if resp.status_code == 200:
+                    return {
+                        "configured": True,
+                        "valid": True,
+                        "status": "ACTIVE_VALID",
+                        "model": "gemini-1.5-flash",
+                        "message": "Gemini API key is valid, active, and successfully communicating with Google AI Studio.",
+                        "masked_key": masked,
+                    }
+                else:
+                    try:
+                        err_json = resp.json()
+                        err_msg = err_json.get("error", {}).get("message", f"HTTP {resp.status_code}")
+                    except Exception:
+                        err_msg = f"HTTP {resp.status_code}"
+                    
+                    return {
+                        "configured": True,
+                        "valid": False,
+                        "status": "INVALID_OR_RESTRICTED",
+                        "http_status": resp.status_code,
+                        "message": f"Google AI Studio rejected key: {err_msg}",
+                        "masked_key": masked,
+                    }
+        except Exception as e:
+            return {
+                "configured": True,
+                "valid": False,
+                "status": "CONNECTION_ERROR",
+                "message": f"Network error contacting Google Generative Language API: {str(e)}",
+                "masked_key": masked,
+            }
 
     async def interpret_query_with_gemini(self, query: str) -> Optional[Dict[str, str]]:
         """

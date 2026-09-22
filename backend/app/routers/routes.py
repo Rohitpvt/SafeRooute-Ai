@@ -10,6 +10,7 @@ from app.schemas.route import (
     RoutePreviewResponseData,
     GeocodeRequest,
     GeocodeResponseData,
+    APIKeyValidationRequest,
 )
 from app.services.routing_service import (
     routing_service,
@@ -69,6 +70,45 @@ async def geocode_location(
         message=f"Location search completed with status: {result['match_status']}.",
         data=result,
         status_code=status.HTTP_200_OK,
+        request_id=request_id,
+    )
+
+
+@router.get("/routes/geocode/key-status")
+async def check_gemini_key_status(
+    request: Request,
+):
+    """
+    Probes the configured Gemini API key against Google Generative Language API and returns diagnostic validation results.
+    """
+    request_id = getattr(request.state, "request_id", None)
+    result = await AIGeocodingService.validate_api_key()
+
+    return build_api_response(
+        success=result["valid"],
+        message=result["message"],
+        data=result,
+        status_code=status.HTTP_200_OK if result["valid"] else (status.HTTP_200_OK if not result["configured"] else status.HTTP_400_BAD_REQUEST),
+        request_id=request_id,
+    )
+
+
+@router.post("/routes/geocode/validate-key")
+async def validate_custom_gemini_key(
+    payload: APIKeyValidationRequest,
+    request: Request,
+):
+    """
+    Validates a specific Gemini API key directly against Google Generative Language API.
+    """
+    request_id = getattr(request.state, "request_id", None)
+    result = await AIGeocodingService.validate_api_key(test_key=payload.api_key)
+
+    return build_api_response(
+        success=result["valid"],
+        message=result["message"],
+        data=result,
+        status_code=status.HTTP_200_OK if result["valid"] else status.HTTP_400_BAD_REQUEST,
         request_id=request_id,
     )
 

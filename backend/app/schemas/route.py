@@ -80,3 +80,7 @@ class GeocodeResponseData(BaseModel):
     match_status: str = Field(..., description="Overall match status: verified | candidate_list | no_match.")
     ai_interpretation: AIInterpretation | None = Field(None, description="Structured query intent extracted by Gemini.")
     candidates: list[GeocodeCandidate] = Field(default_factory=list, description="Alternative candidate matches if ambiguous.")
+
+
+class APIKeyValidationRequest(BaseModel):
+    api_key: str | None = Field(None, description="Optional Gemini API key string to validate.")
