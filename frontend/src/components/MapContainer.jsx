@@ -202,38 +202,86 @@ export default function MapContainer() {
     routePolylinesRef.current.forEach((line) => line.remove());
     routePolylinesRef.current = [];
 
-    if (!routeRiskResult || !routeRiskResult.segments || routeRiskResult.segments.length === 0) return;
+    if (!routeRiskResult) return;
 
     const bounds = L.latLngBounds([]);
+    const segments = routeRiskResult.segments || [];
 
-    routeRiskResult.segments.forEach((seg) => {
-      const rawCoords = seg.geometry?.coordinates || [];
-      if (rawCoords.length < 2) return;
-
-      // GeoJSON [lng, lat] -> Leaflet [lat, lng]
+    // Fallback: If segments array is empty but route_geometry is provided
+    if (segments.length === 0 && routeRiskResult.route_geometry?.coordinates) {
+      const rawCoords = routeRiskResult.route_geometry.coordinates;
       const latLngs = rawCoords.map((coord) => [coord[1], coord[0]]);
       latLngs.forEach((ll) => bounds.extend(ll));
 
-      const isSelected = selectedSegment?.segment_id === seg.segment_id;
-      const polyline = L.polyline(latLngs, {
-        color: seg.color || "#64748B",
-        weight: isSelected ? 8 : 5,
-        opacity: isSelected ? 1.0 : 0.85,
+      // Glow / shadow casing
+      const casing = L.polyline(latLngs, {
+        color: "#0F172A",
+        weight: 9,
+        opacity: 0.8,
         lineCap: "round",
         lineJoin: "round",
       }).addTo(map);
 
-      polyline.on("click", (e) => {
-        L.DomEvent.stopPropagation(e);
-        selectSegment(seg);
-      });
+      const polyline = L.polyline(latLngs, {
+        color: "#10B981",
+        weight: 5,
+        opacity: 0.95,
+        lineCap: "round",
+        lineJoin: "round",
+      }).addTo(map);
 
-      routePolylinesRef.current.push(polyline);
-    });
+      routePolylinesRef.current.push(casing, polyline);
+    } else {
+      segments.forEach((seg) => {
+        const rawCoords = seg.geometry?.coordinates || [];
+        if (rawCoords.length < 2) return;
+
+        // GeoJSON [lng, lat] -> Leaflet [lat, lng]
+        const latLngs = rawCoords.map((coord) => [coord[1], coord[0]]);
+        latLngs.forEach((ll) => bounds.extend(ll));
+
+        const isSelected = selectedSegment?.segment_id === seg.segment_id;
+        const segColor = seg.color || "#10B981";
+
+        // Underline shadow casing for high visibility over satellite & dark tiles
+        const casing = L.polyline(latLngs, {
+          color: isSelected ? "#FFFFFF" : "#0A0A0A",
+          weight: isSelected ? 10 : 8,
+          opacity: isSelected ? 0.9 : 0.7,
+          lineCap: "round",
+          lineJoin: "round",
+        }).addTo(map);
+
+        const polyline = L.polyline(latLngs, {
+          color: segColor,
+          weight: isSelected ? 7 : 5,
+          opacity: 0.95,
+          lineCap: "round",
+          lineJoin: "round",
+        }).addTo(map);
+
+        const popupContent = `
+          <div style="font-family: sans-serif; font-size: 12px; color: #1E293B;">
+            <div style="font-weight: bold; margin-bottom: 2px;">${seg.road_name || "Road Segment"}</div>
+            <div style="color: #64748B;">Type: <b>${seg.road_type || "Arterial"}</b> | Length: <b>${seg.distance_m || 0}m</b></div>
+            <div style="margin-top: 4px;">Risk Score: <b style="color: ${segColor};">${seg.risk_score ?? "Low"}</b> (${seg.risk_category || "Low"})</div>
+          </div>
+        `;
+        polyline.bindPopup(popupContent);
+
+        polyline.on("click", (e) => {
+          L.DomEvent.stopPropagation(e);
+          selectSegment(seg);
+        });
+
+        routePolylinesRef.current.push(casing, polyline);
+      });
+    }
 
     // Fit map bounds to show complete route geometry
     if (bounds.isValid()) {
-      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+      map.invalidateSize();
+      map.fitBounds(bounds, { padding: [60, 60], maxZoom: 15 });
     }
   }, [routeRiskResult, selectedSegment, selectSegment, mapLoaded]);
 
