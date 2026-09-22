@@ -164,6 +164,9 @@ def verify_query_match(user_query: str, location_name: str, ai_intent: Optional[
 
 
 
+_RUNTIME_GEMINI_API_KEY: str = ""
+
+
 class AIGeocodingService:
     """
     AI-Assisted Place Search Service.
@@ -171,16 +174,29 @@ class AIGeocodingService:
     Coordinates originate exclusively from Authoritative Geocoders (LOCAL_PRESET, NOMINATIM, OPEN_METEO).
     """
 
+    @classmethod
+    def set_runtime_key(cls, key: str):
+        global _RUNTIME_GEMINI_API_KEY
+        _RUNTIME_GEMINI_API_KEY = key.strip() if key else ""
+
+    @classmethod
+    def get_runtime_key(cls) -> str:
+        global _RUNTIME_GEMINI_API_KEY
+        return _RUNTIME_GEMINI_API_KEY or getattr(settings, "GEMINI_API_KEY", "") or os.environ.get("GEMINI_API_KEY", "")
+
+    def __init__(self, api_key: Optional[str] = None):
+        self.api_key = api_key or self.get_runtime_key()
+
     @staticmethod
     async def validate_api_key(test_key: Optional[str] = None) -> Dict[str, Any]:
         """Directly probes Google Gemini API to test key validity and model accessibility."""
-        key_to_test = test_key or getattr(settings, "GEMINI_API_KEY", "") or os.environ.get("GEMINI_API_KEY", "")
+        key_to_test = test_key or AIGeocodingService.get_runtime_key()
         if not key_to_test or not key_to_test.strip():
             return {
                 "configured": False,
                 "valid": False,
                 "status": "NOT_CONFIGURED",
-                "message": "No GEMINI_API_KEY configured in backend environment variables.",
+                "message": "No GEMINI_API_KEY configured yet.",
                 "masked_key": None,
             }
 
@@ -236,7 +252,8 @@ class AIGeocodingService:
         Returns: { "place": "...", "landmark": "...", "locality": "...", "city": "Delhi" }
         Does NOT generate or return latitude/longitude coordinates.
         """
-        if not self.api_key:
+        active_key = self.api_key or self.get_runtime_key()
+        if not active_key:
             logger.info("Gemini API key not configured; skipping AI interpretation layer.")
             return None
 
@@ -246,7 +263,7 @@ class AIGeocodingService:
             "Do NOT output coordinates, markdown formatting, or explanation. Return ONLY valid JSON."
         )
 
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={self.api_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={active_key}"
         headers = {"Content-Type": "application/json"}
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],

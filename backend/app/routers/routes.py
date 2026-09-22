@@ -60,9 +60,11 @@ async def geocode_location(
     """
     AI-Assisted Place Geocoding endpoint.
     Uses Gemini AI as query interpretation layer, with coordinates strictly sourced from authoritative geocoders.
+    Supports client header 'X-Gemini-API-Key' or active server key.
     """
     request_id = getattr(request.state, "request_id", None)
-    service = AIGeocodingService()
+    client_key = request.headers.get("x-gemini-api-key")
+    service = AIGeocodingService(api_key=client_key)
     result = await service.geocode(payload.query)
 
     return build_api_response(
@@ -82,7 +84,8 @@ async def check_gemini_key_status(
     Probes the configured Gemini API key against Google Generative Language API and returns diagnostic validation results.
     """
     request_id = getattr(request.state, "request_id", None)
-    result = await AIGeocodingService.validate_api_key()
+    client_key = request.headers.get("x-gemini-api-key")
+    result = await AIGeocodingService.validate_api_key(test_key=client_key)
 
     return build_api_response(
         success=result["valid"],
@@ -109,6 +112,48 @@ async def validate_custom_gemini_key(
         message=result["message"],
         data=result,
         status_code=status.HTTP_200_OK if result["valid"] else status.HTTP_400_BAD_REQUEST,
+        request_id=request_id,
+    )
+
+
+@router.post("/routes/geocode/set-key")
+async def set_gemini_api_key(
+    payload: APIKeyValidationRequest,
+    request: Request,
+):
+    """
+    Validates and dynamically activates a Google Gemini API key on the backend at runtime from frontend UI.
+    """
+    request_id = getattr(request.state, "request_id", None)
+    if not payload.api_key or not payload.api_key.strip():
+        AIGeocodingService.set_runtime_key("")
+        return build_api_response(
+            success=True,
+            message="Gemini API key cleared from active runtime.",
+            data={"configured": False, "valid": False, "status": "CLEARED"},
+            status_code=status.HTTP_200_OK,
+            request_id=request_id,
+        )
+
+    # Validate against Google AI Studio
+    validation_res = await AIGeocodingService.validate_api_key(test_key=payload.api_key.strip())
+    if not validation_res.get("valid"):
+        return build_api_response(
+            success=False,
+            message=validation_res.get("message", "Google AI Studio rejected API key"),
+            data=validation_res,
+            status_code=status.HTTP_400_BAD_REQUEST,
+            request_id=request_id,
+        )
+
+    # Save runtime key in memory
+    AIGeocodingService.set_runtime_key(payload.api_key.strip())
+    
+    return build_api_response(
+        success=True,
+        message="Gemini AI Studio key successfully validated and activated on backend.",
+        data=validation_res,
+        status_code=status.HTTP_200_OK,
         request_id=request_id,
     )
 

@@ -11,12 +11,18 @@ const apiClient = axios.create({
   },
 });
 
-// Request Interceptor: Attach JWT token if present
+// Request Interceptor: Attach JWT token & Gemini API key if present
 apiClient.interceptors.request.use(
   (config) => {
-    const token = typeof window !== 'undefined' && window.localStorage ? localStorage.getItem('access_token') : null;
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      const geminiKey = localStorage.getItem('gemini_api_key');
+      if (geminiKey) {
+        config.headers['X-Gemini-API-Key'] = geminiKey;
+      }
     }
     return config;
   },
